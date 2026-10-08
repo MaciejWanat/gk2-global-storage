@@ -1,0 +1,8 @@
+{
+  "name": "Global Storage (loader)",
+  "font": "default",
+  "rtl": false,
+  "preprocessors": [ "GK2GlobalStorage.Hook, GK2GlobalStorage" ],
+  "requireResize": false,
+  "fallback": "en"
+}

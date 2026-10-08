@@ -1,0 +1,128 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The mod itself. Shipped as Managed\GK2GlobalStorage\GK2GlobalStorage.Core.dll and loaded from bytes
+       by the loader (loader\), after Harmony is in memory. Shared settings: Directory.Build.props. -->
+  <PropertyGroup>
+    <AssemblyName>GK2GlobalStorage.Core</AssemblyName>
+    <RootNamespace>GK2GlobalStorage</RootNamespace>
+    <PackageDir>$(MSBuildThisFileDirectory)package</PackageDir>
+    <LoaderProject>$(MSBuildThisFileDirectory)loader\GK2GlobalStorage.Loader.csproj</LoaderProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="loader\**" />
+    <None Remove="loader\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Compile against Harmony; the DLL is shipped in Managed\GK2GlobalStorage\. -->
+    <PackageReference Include="Lib.Harmony" Version="$(HarmonyVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp"><HintPath>$(Managed)\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="LazyBearTechnology"><HintPath>$(Managed)\LazyBearTechnology.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Rewired_Core"><HintPath>$(Managed)\Rewired_Core.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Unity.TextMeshPro"><HintPath>$(Managed)\Unity.TextMeshPro.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine"><HintPath>$(Managed)\UnityEngine.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(Managed)\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.IMGUIModule"><HintPath>$(Managed)\UnityEngine.IMGUIModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.InputLegacyModule"><HintPath>$(Managed)\UnityEngine.InputLegacyModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.TextRenderingModule"><HintPath>$(Managed)\UnityEngine.TextRenderingModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.UI"><HintPath>$(Managed)\UnityEngine.UI.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.UIModule"><HintPath>$(Managed)\UnityEngine.UIModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="netstandard"><HintPath>$(Managed)\netstandard.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+
+  <!-- Build the loader and lay out the ready-to-copy folder (git-ignored): package\CopyToGameFolder\... -->
+  <Target Name="LayoutPackage" AfterTargets="Build">
+    <MSBuild Projects="$(LoaderProject)" Targets="Restore;Build" Properties="Configuration=$(Configuration);GameDir=$(GameDir)">
+      <Output TaskParameter="TargetOutputs" ItemName="LoaderDll" />
+    </MSBuild>
+    <PropertyGroup>
+      <HarmonyDir>$(NuGetPackageRoot)lib.harmony\$(HarmonyVersion)</HarmonyDir>
+      <OutManaged>$(PackageDir)\CopyToGameFolder\GraveyardKeeper2_Data\Managed</OutManaged>
+    </PropertyGroup>
+    <RemoveDir Directories="$(PackageDir)\CopyToGameFolder" />
+    <Copy SourceFiles="@(LoaderDll)" DestinationFolder="$(OutManaged)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(OutManaged)\GK2GlobalStorage" />
+    <Copy SourceFiles="$(HarmonyDir)\lib\net472\0Harmony.dll" DestinationFolder="$(OutManaged)\GK2GlobalStorage" />
+    <Copy SourceFiles="$(HarmonyDir)\LICENSE" DestinationFiles="$(OutManaged)\GK2GlobalStorage\Harmony_LICENSE.txt" />
+    <Copy SourceFiles="$(PackageDir)\Languages\gk2globalstorage\language.json" DestinationFolder="$(PackageDir)\CopyToGameFolder\Languages\gk2globalstorage" />
+  </Target>
+
+  <!-- dotnet build GK2GlobalStorage.csproj -c Release -t:Workshop -p:ChangeNote="..."
+       Lays out dist\workshop\ (the folder to pick in the in-game Workshop Creator, or to upload with SteamCMD)
+       and, once WorkshopId is set, dist\workshop_item.vdf for: steamcmd +login <user> +workshop_build_item <vdf> +quit
+       See docs\publishing.md. -->
+  <Target Name="Workshop" DependsOnTargets="Build">
+    <PropertyGroup>
+      <WorkshopDir>$(MSBuildThisFileDirectory)dist\workshop</WorkshopDir>
+      <WorkshopVdf>$(MSBuildThisFileDirectory)dist\workshop_item.vdf</WorkshopVdf>
+      <ChangeNote Condition="'$(ChangeNote)' == ''">Version $(Version)</ChangeNote>
+    </PropertyGroup>
+    <ItemGroup>
+      <WorkshopFiles Include="$(PackageDir)\CopyToGameFolder\**\*" />
+    </ItemGroup>
+    <RemoveDir Directories="$(WorkshopDir)" />
+    <Copy SourceFiles="@(WorkshopFiles)" DestinationFiles="@(WorkshopFiles->'$(WorkshopDir)\CopyToGameFolder\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="$(PackageDir)\README.txt;$(MSBuildThisFileDirectory)workshop\Thumbnail.png" DestinationFolder="$(WorkshopDir)" />
+    <!-- Content, change note, title, description (workshop\description.bbcode) and preview image are sent with
+         every upload: the Workshop page does not let the author edit them. Visibility only with
+         -p:WorkshopVisibility=0 (public), 1 (friends), 2 (hidden) or 3 (unlisted). Tags are left untouched. -->
+    <PropertyGroup>
+      <WorkshopDescription>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)workshop\description.bbcode').Replace('%0D', '').TrimEnd().Replace('\', '\\').Replace('&quot;', '\&quot;'))</WorkshopDescription>
+    </PropertyGroup>
+    <ItemGroup>
+      <VdfLine Include="&quot;workshopitem&quot;" />
+      <VdfLine Include="{" />
+      <VdfLine Include="	&quot;appid&quot;	&quot;4358690&quot;" />
+      <VdfLine Include="	&quot;publishedfileid&quot;	&quot;$(WorkshopId)&quot;" />
+      <VdfLine Include="	&quot;contentfolder&quot;	&quot;$(WorkshopDir.Replace('\', '\\'))&quot;" />
+      <VdfLine Include="	&quot;previewfile&quot;	&quot;$(WorkshopDir.Replace('\', '\\'))\\Thumbnail.png&quot;" />
+      <VdfLine Include="	&quot;title&quot;	&quot;Global Storage&quot;" />
+      <VdfLine Include="	&quot;description&quot;	&quot;$([MSBuild]::Escape($(WorkshopDescription)))&quot;" />
+      <VdfLine Condition="'$(WorkshopVisibility)' != ''" Include="	&quot;visibility&quot;	&quot;$(WorkshopVisibility)&quot;" />
+      <VdfLine Include="	&quot;changenote&quot;	&quot;$([MSBuild]::Escape($(ChangeNote.Replace('&quot;', '\&quot;'))))&quot;" />
+      <VdfLine Include="}" />
+    </ItemGroup>
+    <WriteLinesToFile Condition="'$(WorkshopId)' != ''" File="$(WorkshopVdf)" Lines="@(VdfLine)" Overwrite="true" />
+    <Message Importance="high" Text="Workshop folder: $(WorkshopDir)" />
+    <Message Importance="high" Condition="'$(WorkshopId)' != ''" Text="SteamCMD item file: $(WorkshopVdf)" />
+    <Message Importance="high" Condition="'$(WorkshopId)' == ''" Text="WorkshopId not set yet: first upload via the in-game Creator (docs\publishing.md), then set it in Directory.Build.props." />
+  </Target>
+
+  <!-- dotnet build GK2GlobalStorage.csproj -c Release -t:Zip
+       Release ZIPs in dist\: GK2GlobalStorage-<version>.zip (GitHub) and GK2GlobalStorage-<version>-nexus.zip (Nexus Mods).
+       Same files; each carries Managed\GK2GlobalStorage\source.txt so the main menu can say where the mod came from. -->
+  <Target Name="Zip" DependsOnTargets="Build">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="ZipChannel" Properties="Configuration=$(Configuration);GameDir=$(GameDir);Channel=GitHub;ZipSuffix=" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="ZipChannel" Properties="Configuration=$(Configuration);GameDir=$(GameDir);Channel=Nexus Mods;ZipSuffix=-nexus" />
+  </Target>
+
+  <Target Name="ZipChannel">
+    <PropertyGroup>
+      <ZipStage>$(MSBuildThisFileDirectory)obj\zip\$(Channel)</ZipStage>
+      <ZipFile>$(MSBuildThisFileDirectory)dist\GK2GlobalStorage-$(Version)$(ZipSuffix).zip</ZipFile>
+    </PropertyGroup>
+    <ItemGroup>
+      <ZipFiles Include="$(PackageDir)\CopyToGameFolder\**\*" />
+    </ItemGroup>
+    <RemoveDir Directories="$(ZipStage)" />
+    <Copy SourceFiles="@(ZipFiles)" DestinationFiles="@(ZipFiles->'$(ZipStage)\CopyToGameFolder\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="$(PackageDir)\README.txt" DestinationFolder="$(ZipStage)" />
+    <WriteLinesToFile File="$(ZipStage)\CopyToGameFolder\GraveyardKeeper2_Data\Managed\GK2GlobalStorage\source.txt" Lines="$(Channel)" Overwrite="true" />
+    <ZipDirectory SourceDirectory="$(ZipStage)" DestinationFile="$(ZipFile)" Overwrite="true" />
+    <Message Importance="high" Text="Release ZIP ($(Channel)): $(ZipFile)" />
+  </Target>
+
+  <!-- dotnet build -c Release -t:Install  copies the package into GameDir (close the game first). -->
+  <Target Name="Install" DependsOnTargets="Build">
+    <ItemGroup>
+      <PackageFiles Include="$(PackageDir)\CopyToGameFolder\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PackageFiles)" DestinationFiles="@(PackageFiles->'$(GameDir)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Message Importance="high" Text="Installed into $(GameDir)" />
+  </Target>
+
+</Project>

@@ -1,0 +1,25 @@
+<Project>
+  <!-- Shared by the loader and the core project. -->
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <Version>1.0.0</Version>
+    <Deterministic>true</Deterministic>
+    <DebugType>none</DebugType>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Game install (compile references only, nothing from it is copied into the repo).
+         Override with: dotnet build -p:GameDir="D:\SteamLibrary\steamapps\common\Graveyard Keeper 2" -->
+    <GameDir Condition="'$(GameDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Graveyard Keeper 2</GameDir>
+    <Managed>$(GameDir)\GraveyardKeeper2_Data\Managed</Managed>
+    <HarmonyVersion>2.4.2</HarmonyVersion>
+    <!-- Steam Workshop item id, known after the first upload (see docs/publishing.md).
+         Empty = no auto-update from the Workshop folder. -->
+    <WorkshopId>3815861361</WorkshopId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyMetadata Include="GK2GlobalStorage.WorkshopId" Value="$(WorkshopId)" />
+  </ItemGroup>
+</Project>

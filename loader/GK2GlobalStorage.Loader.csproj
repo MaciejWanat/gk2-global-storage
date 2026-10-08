@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Tiny launcher loaded by the game (via language.json). Must NOT reference Harmony or the core:
+       it loads Harmony first, then the core from bytes, so the core's Harmony reference resolves. -->
+  <PropertyGroup>
+    <AssemblyName>GK2GlobalStorage</AssemblyName>
+    <RootNamespace>GK2GlobalStorage</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="SoftMask"><HintPath>$(Managed)\SoftMask.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Unity.TextMeshPro"><HintPath>$(Managed)\Unity.TextMeshPro.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine"><HintPath>$(Managed)\UnityEngine.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(Managed)\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.UIModule"><HintPath>$(Managed)\UnityEngine.UIModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="netstandard"><HintPath>$(Managed)\netstandard.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+
+</Project>

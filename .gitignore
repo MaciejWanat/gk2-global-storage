@@ -1,0 +1,21 @@
+# Build output
+bin/
+obj/
+package/CopyToGameFolder/
+dist/
+*.zip
+
+# IDE
+.vs/
+.idea/
+*.user
+*.suo
+
+# Never commit game files, decompiled sources, logs or saves
+*.dll
+*.pdb
+decompiled/
+Player*.log
+*.dat
+*.info
+GK2GlobalStorage.cfg
