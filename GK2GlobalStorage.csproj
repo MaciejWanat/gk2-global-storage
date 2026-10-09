@@ -69,20 +69,24 @@
     <Copy SourceFiles="$(PackageDir)\README.txt;$(MSBuildThisFileDirectory)workshop\Thumbnail.png" DestinationFolder="$(WorkshopDir)" />
     <!-- Content, change note, title and description (workshop\description.bbcode) are sent with every upload:
          the Workshop page did not let the author edit them. The preview image stays as uploaded. Visibility only with
-         -p:WorkshopVisibility=0 (public), 1 (friends), 2 (hidden) or 3 (unlisted). Tags are left untouched. -->
+         -p:WorkshopVisibility=0 (public), 1 (friends), 2 (hidden) or 3 (unlisted). Tags are left untouched.
+         SteamCMD reads the .vdf without escape sequences: text goes in as is (a \ stays a \) and a straight
+         double quote would end the value, so the description and change note must not contain one. -->
     <PropertyGroup>
-      <WorkshopDescription>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)workshop\description.bbcode').Replace('%0D', '').TrimEnd().Replace('\', '\\').Replace('&quot;', '\&quot;'))</WorkshopDescription>
+      <WorkshopDescription>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)workshop\description.bbcode').Replace('%0D', '').TrimEnd())</WorkshopDescription>
     </PropertyGroup>
+    <Error Condition="$(WorkshopDescription.Contains('&quot;'))" Text="workshop\description.bbcode contains a straight double quote (&quot;), which SteamCMD would cut the description at. Use “ ” or ' instead." />
+    <Error Condition="$(ChangeNote.Contains('&quot;'))" Text="ChangeNote contains a straight double quote (&quot;), which SteamCMD would cut it at. Use “ ” or ' instead." />
     <ItemGroup>
       <VdfLine Include="&quot;workshopitem&quot;" />
       <VdfLine Include="{" />
       <VdfLine Include="	&quot;appid&quot;	&quot;4358690&quot;" />
       <VdfLine Include="	&quot;publishedfileid&quot;	&quot;$(WorkshopId)&quot;" />
-      <VdfLine Include="	&quot;contentfolder&quot;	&quot;$(WorkshopDir.Replace('\', '\\'))&quot;" />
+      <VdfLine Include="	&quot;contentfolder&quot;	&quot;$(WorkshopDir)&quot;" />
       <VdfLine Include="	&quot;title&quot;	&quot;Global Storage&quot;" />
       <VdfLine Include="	&quot;description&quot;	&quot;$([MSBuild]::Escape($(WorkshopDescription)))&quot;" />
       <VdfLine Condition="'$(WorkshopVisibility)' != ''" Include="	&quot;visibility&quot;	&quot;$(WorkshopVisibility)&quot;" />
-      <VdfLine Include="	&quot;changenote&quot;	&quot;$([MSBuild]::Escape($(ChangeNote.Replace('&quot;', '\&quot;'))))&quot;" />
+      <VdfLine Include="	&quot;changenote&quot;	&quot;$([MSBuild]::Escape($(ChangeNote)))&quot;" />
       <VdfLine Include="}" />
     </ItemGroup>
     <WriteLinesToFile Condition="'$(WorkshopId)' != ''" File="$(WorkshopVdf)" Lines="@(VdfLine)" Overwrite="true" />
