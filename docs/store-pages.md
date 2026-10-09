@@ -41,6 +41,15 @@ Use items from [b]any chest, in any area and on any level[/b] – for building, 
 [/list]
 [b]Steam Deck:[/b] in Desktop Mode, extract the ZIP, open the game folder (Steam → Manage → Browse local files), copy the two folders from CopyToGameFolder into it (merge), back to Gaming Mode.
 
+[size=5][b]Is it safe for my save?[/b][/size]
+[list]
+[*][b]Nothing is added to your save.[/b] No extra data on items, chests or the world – a save made with the mod is a normal save, and you can remove the mod at any time.
+[*][b]It never saves the game itself.[/b] Only the game writes your save.
+[*][b]Items are only used or moved.[/b] Nothing is copied out of thin air: items are taken from a chest when you build, craft, finish a quest or sell, the same way the game takes them from your bag.
+[*][b]Worth knowing:[/b] the mod really uses any chest, so materials you keep far away for later can be used too. With the optional zombie and pickup settings, items are moved between chests.
+[*]As with any mod, keep a backup of your saves.
+[/list]
+
 [size=5][b]Good to know[/b][/size]
 [list]
 [*]No BepInEx. Does not change game files or your save – remove it any time by deleting [i]GraveyardKeeper2_Data\Managed\GK2GlobalStorage.dll[/i], the folder [i]GraveyardKeeper2_Data\Managed\GK2GlobalStorage[/i] and [i]Languages\gk2globalstorage[/i].
