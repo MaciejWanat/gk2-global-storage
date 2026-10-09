@@ -65,6 +65,7 @@ title, description and visibility were kept.
    dotnet build GK2GlobalStorage.csproj -c Release -t:Workshop -p:ChangeNote="What changed"
    steamcmd +login <steam_user> +workshop_build_item "<repo>\dist\workshop_item.vdf" +quit
    ```
+   In the change note write `%3B` instead of `;` (MSBuild splits properties on semicolons).
    Do not use the in-game Creator for updates (it wipes the description and unlists the item).
 4. GitHub: new release with the GitHub ZIP (see below). Nexus: upload the `-nexus` ZIP as a new main-file version.
 

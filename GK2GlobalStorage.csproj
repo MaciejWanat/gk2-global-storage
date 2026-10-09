@@ -67,8 +67,8 @@
     <RemoveDir Directories="$(WorkshopDir)" />
     <Copy SourceFiles="@(WorkshopFiles)" DestinationFiles="@(WorkshopFiles->'$(WorkshopDir)\CopyToGameFolder\%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="$(PackageDir)\README.txt;$(MSBuildThisFileDirectory)workshop\Thumbnail.png" DestinationFolder="$(WorkshopDir)" />
-    <!-- Content, change note, title, description (workshop\description.bbcode) and preview image are sent with
-         every upload: the Workshop page does not let the author edit them. Visibility only with
+    <!-- Content, change note, title and description (workshop\description.bbcode) are sent with every upload:
+         the Workshop page did not let the author edit them. The preview image stays as uploaded. Visibility only with
          -p:WorkshopVisibility=0 (public), 1 (friends), 2 (hidden) or 3 (unlisted). Tags are left untouched. -->
     <PropertyGroup>
       <WorkshopDescription>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)workshop\description.bbcode').Replace('%0D', '').TrimEnd().Replace('\', '\\').Replace('&quot;', '\&quot;'))</WorkshopDescription>
@@ -79,7 +79,6 @@
       <VdfLine Include="	&quot;appid&quot;	&quot;4358690&quot;" />
       <VdfLine Include="	&quot;publishedfileid&quot;	&quot;$(WorkshopId)&quot;" />
       <VdfLine Include="	&quot;contentfolder&quot;	&quot;$(WorkshopDir.Replace('\', '\\'))&quot;" />
-      <VdfLine Include="	&quot;previewfile&quot;	&quot;$(WorkshopDir.Replace('\', '\\'))\\Thumbnail.png&quot;" />
       <VdfLine Include="	&quot;title&quot;	&quot;Global Storage&quot;" />
       <VdfLine Include="	&quot;description&quot;	&quot;$([MSBuild]::Escape($(WorkshopDescription)))&quot;" />
       <VdfLine Condition="'$(WorkshopVisibility)' != ''" Include="	&quot;visibility&quot;	&quot;$(WorkshopVisibility)&quot;" />
