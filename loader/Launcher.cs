@@ -11,7 +11,6 @@ namespace GK2GlobalStorage
     // Why two assemblies: this one is loaded by the game from Managed\ (default load context), where Mono
     // will not bind a reference to a Harmony copy living in a subfolder. A byte-loaded assembly has no load
     // path, so its Harmony reference goes through AssemblyResolve below and gets the copy already in memory.
-    // Same layout as "No More Running Back" (GK2Notepad), which works in this game.
     //
     // Auto-update: when subscribed on the Steam Workshop, Steam keeps a copy of the mod in
     // steamapps\workshop\content\4358690\<WorkshopId>\CopyToGameFolder\... The core (and Harmony) are taken

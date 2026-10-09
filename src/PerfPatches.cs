@@ -84,8 +84,7 @@ namespace GK2GlobalStorage
         // Area changes are async (fade, unload/load scene, stream objects, fade back), so they are timed between
         // three points: control taken for the teleport (start), PlayerController.OnPlayerTeleported (the player
         // is placed in the new area) and control given back (player can move).
-        // PlayerController.Teleport and the fade methods are deliberately not patched: No More Running Back
-        // speeds those up and steps aside when another mod patches them.
+        // PlayerController.Teleport and the fade methods are deliberately not patched: other mods change them.
         private static int InstallTransitions(Harmony harmony)
         {
             MethodInfo control = AccessTools.Method(typeof(PlayerController), nameof(PlayerController.SetControlTakenType));

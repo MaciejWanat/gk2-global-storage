@@ -14,8 +14,8 @@ namespace GK2GlobalStorage
         private const float Top = 8f;
         private const float Gap = 6f;
 
-        // Labels other mods put in the same corner of the main menu, top to bottom.
-        private static readonly string[] OtherBadges = { "GK2Notepad.MenuSettings", "GK2Notepad.MenuBadge" };
+        // How far from the right edge something may sit and still count as being in the corner.
+        private const float CornerWidth = 500f;
 
         private TMP_Text label;
         private bool failed;
@@ -109,22 +109,24 @@ namespace GK2GlobalStorage
             return "<color=" + (color ?? accent) + ">" + value + "</color>";
         }
 
-        // Top edge for this label: below the lowest label another mod shows in the corner.
+        // Top edge for this label: below anything else anchored to the same top right corner of the menu canvas
+        // (e.g. labels of other mods).
         private float Below()
         {
             Transform parent = label.transform.parent;
             float y = -Top;
-            foreach (string name in OtherBadges)
+            Vector2 corner = new Vector2(1f, 1f);
+            foreach (Transform child in parent)
             {
-                Transform other = parent.Find(name);
-                if (other == null || !other.gameObject.activeInHierarchy)
+                if (child == label.transform || !child.gameObject.activeInHierarchy || !(child is RectTransform rt)
+                    || rt.anchorMin != corner || rt.anchorMax != corner || rt.anchoredPosition.x < -CornerWidth)
                 {
                     continue;
                 }
-                RectTransform rt = (RectTransform)other;
-                TMP_Text text = other.GetComponent<TMP_Text>();
+                TMP_Text text = child.GetComponent<TMP_Text>();
                 float height = text != null ? Mathf.Min(text.preferredHeight, rt.rect.height) : rt.rect.height;
-                y = Mathf.Min(y, rt.anchoredPosition.y - height - Gap);
+                float bottom = rt.anchoredPosition.y - height * rt.pivot.y;
+                y = Mathf.Min(y, bottom - Gap);
             }
             return y;
         }

@@ -20,6 +20,10 @@ namespace GK2GlobalStorage
         [ThreadStatic]
         private static int pickerDepth;
 
+        // >0 while an item picker window is being built that lists every chest.
+        [ThreadStatic]
+        private static int globalPickerDepth;
+
         // Item filter of the picker window being built (null outside pickers or for pickers without one).
         [ThreadStatic]
         private static Func<Item, bool> pickerFilter;
@@ -50,9 +54,9 @@ namespace GK2GlobalStorage
                 AccessTools.DeclaredMethod(typeof(InventoryWidget), nameof(InventoryWidget.Redraw)),
                 postfix: nameof(InventoryRedrawPostfix));
 
-            // Chest windows: the chest window itself is left alone (No More Running Back speeds it up and steps
-            // aside when another mod patches it). Instead, while a chest is being opened, other areas' chests are
-            // appended to the area-chest list the game builds for that window (see ChestWindowView).
+            // Chest windows: the chest window itself is left alone (other mods change it). Instead, while a chest
+            // is being opened, other areas' chests are appended to the area-chest list the game builds for that
+            // window (see ChestWindowView).
             Patch(harmony, "ChestInteractionHandler.Interact",
                 AccessTools.Method(typeof(ChestInteractionHandler), nameof(ChestInteractionHandler.Interact), new[] { typeof(PlayerController) }),
                 prefix: nameof(ChestOpenPrefix), finalizer: nameof(ChestOpenFinalizer));
@@ -138,7 +142,12 @@ namespace GK2GlobalStorage
         {
             try
             {
-                if (!Config.Enabled || !Config.Building || !addCurrentPlayerWorldZone || pickerDepth > 0)
+                if (!Config.Enabled || !Config.Building || pickerDepth > 0)
+                {
+                    return;
+                }
+                // Bag-only lists stay bag-only, except in pickers: zombie equipment pickers are bag-only in the game.
+                if (!addCurrentPlayerWorldZone && globalPickerDepth == 0)
                 {
                     return;
                 }
@@ -196,6 +205,10 @@ namespace GK2GlobalStorage
             {
                 pickerDepth++;
             }
+            else
+            {
+                globalPickerDepth++;
+            }
             pickerFilter = itemsAvailableCondition;
             __state.filter = itemsAvailableCondition;
         }
@@ -235,6 +248,10 @@ namespace GK2GlobalStorage
                 if (__state.local && pickerDepth > 0)
                 {
                     pickerDepth--;
+                }
+                else if (!__state.local && globalPickerDepth > 0)
+                {
+                    globalPickerDepth--;
                 }
                 pickerFilter = __state.outerFilter;
             }

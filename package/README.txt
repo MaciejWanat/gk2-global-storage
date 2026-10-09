@@ -1,4 +1,4 @@
-Global Storage for Graveyard Keeper 2  (v1.0.1)
+Global Storage for Graveyard Keeper 2  (v1.0.2)
 ================================================
 
 Items in ANY of your storage chests, in ANY zone and on ANY level, can be used for:
@@ -43,9 +43,9 @@ language.json, which loads GK2GlobalStorage.dll; that small loader loads Harmony
 then the mod itself (GK2GlobalStorage.Core.dll). The pack is hidden from the
 language list.
 
-Check it works: the main menu shows "Global Storage v1.0.1 / status: on" in the
+Check it works: the main menu shows "Global Storage v1.0.2 / status: on" in the
 top right corner. Player.log in %USERPROFILE%\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper 2
-should contain "[GK2GlobalStorage] Global Storage 1.0.1 (game folder) loaded (9/9 patches)".
+should contain "[GK2GlobalStorage] Global Storage 1.0.2 (game folder) loaded (9/9 patches)".
 
 SETTINGS
 --------

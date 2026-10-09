@@ -8,9 +8,8 @@ namespace GK2GlobalStorage
     // to your bag. While a chest is being opened, the chests of all other areas are appended to that list, so
     // the game draws them the same way: view only, nothing can be moved or duplicated through them.
     //
-    // Done on that list rather than on the chest window itself, because other mods (No More Running Back)
-    // speed up the chest window and step aside when another mod patches it. Its speed-up then also covers
-    // the extra chests.
+    // Done on that list rather than on the chest window itself, so the chest window stays untouched for
+    // other mods that change it.
     internal static class ChestWindowView
     {
         public static void AppendOtherChests(MultiInventory areaChests, WgoData opened)
