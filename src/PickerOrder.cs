@@ -37,7 +37,7 @@ namespace GK2GlobalStorage
             Perf.End("Picker chest order", t);
         }
 
-        private static bool HasUsable(Inventory inventory, Func<Item, bool> usable)
+        internal static bool HasUsable(Inventory inventory, Func<Item, bool> usable)
         {
             List<Item> items = inventory?.Data?.Inventory;
             if (items == null)

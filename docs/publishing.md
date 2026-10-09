@@ -14,7 +14,7 @@ What auto-updates: `GK2GlobalStorage.Core.dll` and `0Harmony.dll`.
 What does **not**: the loader DLL and `language.json` – players only get those by copying again.
 Keep the loader small and change it only when unavoidable (and say so in the change notes).
 
-The settings window header shows which copy is running: `v1.0.0 (Workshop)` or `(game folder)`.
+The settings window header shows which copy is running: `v1.0.1 (Workshop)` or `(game folder)`.
 
 ## Workshop quirks (in-game Creator)
 
@@ -59,7 +59,7 @@ title, description and visibility were kept.
 ## Updating
 
 1. Change code, test locally (`-t:Install`).
-2. Release version: bump `<Version>` in `Directory.Build.props` (stays 1.0.0 until the first public release).
+2. Release version: bump `<Version>` in `Directory.Build.props` (1.0.0 was the first public release; every update gets a new version, or the Workshop copy may not win over a newer local one).
 3. Workshop:
    ```
    dotnet build GK2GlobalStorage.csproj -c Release -t:Workshop -p:ChangeNote="What changed"
@@ -94,7 +94,7 @@ gh release create v<version> dist/GK2GlobalStorage-<version>.zip --title "Global
 
 ## Before every release
 
-- [ ] Player.log shows `(7/7 patches)` and `Quest patch: N method(s) redirected`
+- [ ] Player.log shows `(9/9 patches)` and `Quest patch: N method(s) redirected`
 - [ ] Settings window opens with Shift+F2 and with L3+R3 on a gamepad; A toggles, B closes
 - [ ] Craft in zone X with items only in a chest in zone Y → chest Y loses them
 - [ ] Quest turn-in and vendor sale from chests work; cancelled vendor deal returns items to the chest

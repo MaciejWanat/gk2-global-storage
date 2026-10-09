@@ -16,7 +16,7 @@ namespace GK2GlobalStorage
             public string hint;
             public Func<bool> get;
             public Action<bool> set;
-            // 0 = top level, 1 = under "Global storage", 2 = under "Show items from other chests".
+            // 0 = top level, 1 = under "Global storage", 2 = under "Show items from other chests", 3 = under "Item pickers".
             public int level;
             public bool dev;
         }
@@ -48,7 +48,7 @@ namespace GK2GlobalStorage
                 get = () => Config.Workbenches, set = v => Config.Workbenches = v },
             new Row { name = "Quests and dialogs", hint = "Items a quest or dialog asks for can come from any chest", level = 1,
                 get = () => Config.Quests, set = v => Config.Quests = v },
-            new Row { name = "Zombie workers", hint = "Workbenches run by zombies also take from all your chests", level = 1,
+            new Row { name = "Zombie workers", hint = "Carriers fetch from the nearest chest; what the area lacks comes from other areas", level = 1,
                 get = () => Config.ZombieWorkers, set = v => Config.ZombieWorkers = v },
             new Row { name = "Automatic crafters", hint = "Crafters with no worker also take from all your chests; can empty them unnoticed", level = 1,
                 get = () => Config.AutoCrafters, set = v => Config.AutoCrafters = v },
@@ -62,6 +62,8 @@ namespace GK2GlobalStorage
                 get = () => Config.Trading, set = v => Config.Trading = v },
             new Row { name = "Item pickers", hint = "Choosing seeds, organs, grave decorations and similar", level = 2,
                 get = () => Config.Pickers, set = v => Config.Pickers = v },
+            new Row { name = "Usable items only", hint = "Pickers hide items they cannot use and chests without such items", level = 3,
+                get = () => Config.PickersOnlyUsable, set = v => Config.PickersOnlyUsable = v },
             new Row { name = "Chest windows", hint = "Opening any chest; other chests are view only there. Slightly affects performance.", level = 2,
                 get = () => Config.ChestWindows, set = v => Config.ChestWindows = v },
             new Row { name = "Performance report", hint = "Developer: every 30 s writes timings to GK2GlobalStorage-perf.txt", dev = true,
@@ -148,7 +150,8 @@ namespace GK2GlobalStorage
             {
                 case 0: return true;
                 case 1: return Config.Enabled;
-                default: return Config.Enabled && Config.ShowOtherChests;
+                case 2: return Config.Enabled && Config.ShowOtherChests;
+                default: return Config.Enabled && Config.ShowOtherChests && Config.Pickers;
             }
         }
 

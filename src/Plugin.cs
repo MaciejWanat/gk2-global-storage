@@ -8,7 +8,7 @@ namespace GK2GlobalStorage
     // Entry point of the core, called by the loader (loader\Launcher.cs) once Harmony is in memory.
     public static class Plugin
     {
-        internal const int PatchCount = 7;
+        internal const int PatchCount = 9;
 
         // Patches applied, or -1 when the mod could not patch the game at all.
         internal static int Patched { get; private set; } = -1;

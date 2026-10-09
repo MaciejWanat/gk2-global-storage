@@ -1,4 +1,4 @@
-Global Storage for Graveyard Keeper 2  (v1.0.0)
+Global Storage for Graveyard Keeper 2  (v1.0.1)
 ================================================
 
 Items in ANY of your storage chests, in ANY zone and on ANY level, can be used for:
@@ -43,9 +43,9 @@ language.json, which loads GK2GlobalStorage.dll; that small loader loads Harmony
 then the mod itself (GK2GlobalStorage.Core.dll). The pack is hidden from the
 language list.
 
-Check it works: the main menu shows "Global Storage v1.0.0 / status: on" in the
+Check it works: the main menu shows "Global Storage v1.0.1 / status: on" in the
 top right corner. Player.log in %USERPROFILE%\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper 2
-should contain "[GK2GlobalStorage] Global Storage 1.0.0 (game folder) loaded (7/7 patches)".
+should contain "[GK2GlobalStorage] Global Storage 1.0.1 (game folder) loaded (9/9 patches)".
 
 SETTINGS
 --------
@@ -61,8 +61,9 @@ Changes apply immediately and are saved to
                   from all your chests
   Quests          items a quest or dialog asks for can come      (default on)
                   from any chest
-  ZombieWorkers   workbenches run by zombies also take from      (default off)
-                  all your chests
+  ZombieWorkers   zombie carriers fetch from the nearest chest;   (default off)
+                  what the area lacks is brought over from
+                  chests in other areas
   AutoCrafters    crafters with no worker also take from all     (default off)
                   your chests; can empty them unnoticed
   FuelContainers  fuel slots of furnaces and similar objects     (default off)
@@ -76,6 +77,8 @@ Changes apply immediately and are saved to
     Trading       vendor windows: sell straight from your chests (default on)
     Pickers       choosing seeds, organs, grave decorations and  (default on)
                   similar; chests with something usable first
+      PickersOnlyUsable  pickers show only usable items and   (default on)
+                  the chests holding them
     ChestWindows  opening any chest; other chests are view only  (default off)
                   there. Slightly affects performance
   ExcludedZones   comma-separated zone ids that stay local (file only)

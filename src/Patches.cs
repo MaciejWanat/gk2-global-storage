@@ -44,7 +44,11 @@ namespace GK2GlobalStorage
 
             ok += Patch(harmony, "UIMultiInventoryWindowData..ctor",
                 FirstConstructor(typeof(UIMultiInventoryWindowData)),
-                prefix: nameof(PickerPrefix), finalizer: nameof(PickerFinalizer));
+                prefix: nameof(PickerPrefix), postfix: nameof(PickerPostfix), finalizer: nameof(PickerFinalizer));
+
+            ok += Patch(harmony, "InventoryWidget.Redraw",
+                AccessTools.DeclaredMethod(typeof(InventoryWidget), nameof(InventoryWidget.Redraw)),
+                postfix: nameof(InventoryRedrawPostfix));
 
             // Chest windows: the chest window itself is left alone (No More Running Back speeds it up and steps
             // aside when another mod patches it). Instead, while a chest is being opened, other areas' chests are
@@ -78,6 +82,15 @@ namespace GK2GlobalStorage
             catch (Exception ex)
             {
                 Debug.LogWarning("[GK2GlobalStorage] Cannot patch trading: " + ex.Message);
+            }
+
+            try
+            {
+                ok += ZombiePatches.Apply(harmony);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning("[GK2GlobalStorage] Cannot patch zombie carriers: " + ex.Message);
             }
 
             try
@@ -173,6 +186,7 @@ namespace GK2GlobalStorage
         {
             public bool local;
             public Func<Item, bool> outerFilter;
+            public Func<Item, bool> filter;
         }
 
         private static void PickerPrefix(Func<Item, bool> itemsAvailableCondition, out PickerState __state)
@@ -183,6 +197,35 @@ namespace GK2GlobalStorage
                 pickerDepth++;
             }
             pickerFilter = itemsAvailableCondition;
+            __state.filter = itemsAvailableCondition;
+        }
+
+        // "Usable items only": the picker lists only what it can use, from the chests that have it.
+        private static void PickerPostfix(UIMultiInventoryWindowData __instance, PickerState __state)
+        {
+            try
+            {
+                if (__state?.filter != null && !__state.local && Config.PickersOnlyUsable)
+                {
+                    PickerFilter.UsableOnly(__instance.MultiInventoryWidgetData, __state.filter);
+                }
+            }
+            catch (Exception ex)
+            {
+                Plugin.ReportOnce("Picker usable items only", ex);
+            }
+        }
+
+        private static void InventoryRedrawPostfix(InventoryWidget __instance)
+        {
+            try
+            {
+                PickerFilter.HideEmptyCells(__instance);
+            }
+            catch (Exception ex)
+            {
+                Plugin.ReportOnce("Picker empty cells", ex);
+            }
         }
 
         private static Exception PickerFinalizer(Exception __exception, PickerState __state)

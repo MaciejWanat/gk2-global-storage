@@ -15,6 +15,7 @@ namespace GK2GlobalStorage
         public static bool ShowOtherChests = true;
         public static bool Trading = true;
         public static bool Pickers = true;
+        public static bool PickersOnlyUsable = true;
         public static bool ChestWindows = false;
         public static bool ZombieWorkers = false;
         public static bool AutoCrafters = false;
@@ -51,7 +52,8 @@ Workbenches = {B(Workbenches)}
 # Quest and dialog requirements are checked against, and taken from, your bag plus every chest.
 Quests = {B(Quests)}
 
-# Workbenches run by zombies also take materials from every zone.
+# Zombie workbenches: their carriers fetch from the nearest chest of the area, and what the area lacks is
+# brought over from chests in other areas. Fuel for zombie workbenches comes from every zone.
 ZombieWorkers = {B(ZombieWorkers)}
 
 # Automatic crafters (no worker) also take materials from every zone. Can quietly drain chests everywhere.
@@ -74,6 +76,9 @@ Trading = {B(Trading)}
 # Item pickers: windows where you choose an item (seeds, organs, sermons, grave decorations, alchemy
 # ingredients...). The picked item is taken from the chest it is in.
 Pickers = {B(Pickers)}
+
+# Item pickers show only the items they can use, and only the chests that hold such items.
+PickersOnlyUsable = {B(PickersOnlyUsable)}
 
 # Chest windows: opening any chest also lists the chests of other areas, view only.
 # Off by default: chest windows open a little slower.
@@ -158,6 +163,7 @@ PerfReport = {B(PerfReport)}
                 case "showotherchests": ShowOtherChests = Bool(value, ShowOtherChests); break;
                 case "trading": Trading = Bool(value, Trading); break;
                 case "pickers": Pickers = Bool(value, Pickers); break;
+                case "pickersonlyusable": PickersOnlyUsable = Bool(value, PickersOnlyUsable); break;
                 case "chestwindows": ChestWindows = Bool(value, ChestWindows); break;
                 // Before 1.0.0 was released: one switch for pickers and chest windows.
                 case "otherwindows": ChestWindows = Bool(value, ChestWindows); break;
