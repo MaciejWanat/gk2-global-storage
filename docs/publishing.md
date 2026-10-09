@@ -65,7 +65,7 @@ title, description and visibility were kept.
    dotnet build GK2GlobalStorage.csproj -c Release -t:Workshop -p:ChangeNote="What changed"
    steamcmd +login <steam_user> +workshop_build_item "<repo>\dist\workshop_item.vdf" +quit
    ```
-   In the change note write `%3B` instead of `;` (MSBuild splits properties on semicolons).
+   In the change note write `%3B` instead of `;` and `%2C` instead of `,` (MSBuild splits properties on them).
    No straight double quotes (") in the change note or in `workshop/description.bbcode`: SteamCMD reads the
    .vdf without escapes and would cut the text there (the build stops with an error). Use “ ” or ' instead.
    Do not use the in-game Creator for updates (it wipes the description and unlists the item).
