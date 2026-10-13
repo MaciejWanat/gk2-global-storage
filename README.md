@@ -29,6 +29,7 @@ which hands it the Harmony already loaded.
 | --- | --- |
 | `MultiInventory(PlayerData, bool)` ctor | bag + current zone gets every chest appended (building, alchemy, garden, pickers, tooltips) |
 | `WgoData.GetCraftableMultiInventory` | workbench material pool gets every chest (not zombie-run / auto crafters unless enabled) |
+| `CraftElementBase.CanFinishCraft` | while it runs, the pool stays the game's: a zombie's result must fit in its area's chests, the only ones carriers store it in |
 | `UIMultiInventoryWindowData` ctor | item picker windows: other areas' chests appended as their own sections only with `Pickers` on (default); chests holding an item the picker accepts come first (after the bag); with `PickersOnlyUsable` (default) only usable items and the chests holding them are shown (game's "not shown" item condition + empty slots hidden in an `InventoryWidget.Redraw` postfix); otherwise exactly as in the game |
 | Transpiler on quest/dialog classes | bag item has/count/remove calls go through `QuestRedirect` (bag first, then chests) |
 | `Trading` | chests with sellable items listed under the bag; moved items are taken from the chest and return there on cancel |
@@ -92,5 +93,18 @@ dotnet build GK2GlobalStorage.csproj -c Release -t:Zip
 ```
 
 Other install location: add `-p:GameDir="D:\SteamLibrary\steamapps\common\Graveyard Keeper 2"`.
+
+## Tests
+
+```
+dotnet test tests\GK2GlobalStorage.Tests
+```
+
+(with `-p:GameDir=...` as above for another install location). The tests run outside the game, on .NET 8, against the
+installed game's DLLs: some game types have default interface methods, which .NET Framework cannot load. They
+cover the config file, the chest pool, the patched game methods (building lists, workbenches, zombie and automatic
+crafters, factory workstations, chest windows), quest redirection, picker order and zombie deliveries, and they
+apply the mod's real Harmony patches, so a game update that removes or renames a patched method fails a test.
+`tests\GK2GlobalStorage.Tests\FakeGame.cs` builds a loaded save without the engine (how and why is described there).
 
 Harmony 2.4.2 (MIT) comes from NuGet.
