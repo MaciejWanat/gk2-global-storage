@@ -32,6 +32,11 @@ namespace GK2GlobalStorage
         [ThreadStatic]
         private static int chestOpenDepth;
 
+        // >0 while CraftElementBase.CanFinishCraft runs. For a zombie at a workbench it checks that the result fits
+        // in the area's chests, where carriers take it; room in other areas must not count there.
+        [ThreadStatic]
+        private static int finishCheckDepth;
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static int Apply()
         {
@@ -45,6 +50,11 @@ namespace GK2GlobalStorage
             ok += Patch(harmony, "WgoData.GetCraftableMultiInventory",
                 AccessTools.Method(typeof(WgoData), nameof(WgoData.GetCraftableMultiInventory)),
                 postfix: nameof(CraftableMultiInventoryPostfix));
+
+            // Not counted, like the chest window patches: without it only the zombie result room check sees every chest.
+            Patch(harmony, "CraftElementBase.CanFinishCraft",
+                AccessTools.Method(typeof(CraftElementBase), nameof(CraftElementBase.CanFinishCraft)),
+                prefix: nameof(FinishCheckPrefix), finalizer: nameof(FinishCheckFinalizer));
 
             ok += Patch(harmony, "UIMultiInventoryWindowData..ctor",
                 FirstConstructor(typeof(UIMultiInventoryWindowData)),
@@ -164,11 +174,12 @@ namespace GK2GlobalStorage
         }
 
         // Workbenches: zone chests (+ worker). Zombie and conveyor objects override this method and are not affected.
+        // Not inside a craft's finish check (see finishCheckDepth).
         private static void CraftableMultiInventoryPostfix(WgoData __instance, MultiInventory __result)
         {
             try
             {
-                if (!Config.Enabled || !Config.Workbenches || __result == null)
+                if (!Config.Enabled || !Config.Workbenches || __result == null || finishCheckDepth > 0)
                 {
                     return;
                 }
@@ -268,6 +279,20 @@ namespace GK2GlobalStorage
             if (chestOpenDepth > 0)
             {
                 chestOpenDepth--;
+            }
+            return __exception;
+        }
+
+        private static void FinishCheckPrefix()
+        {
+            finishCheckDepth++;
+        }
+
+        private static Exception FinishCheckFinalizer(Exception __exception)
+        {
+            if (finishCheckDepth > 0)
+            {
+                finishCheckDepth--;
             }
             return __exception;
         }
