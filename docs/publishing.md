@@ -109,13 +109,14 @@ Update:
 2. If the store text changed, paste the Nexus BBCode from store-pages.md into the description.
 
 Images (header 1300×372, gallery 1920×1080, cover first), made from the thumbnail and the screenshots with
-ImageMagick (Git Bash):
+ImageMagick (Git Bash, into `dist/nexus-images/`, which is not committed):
 ```
-magick docs/screenshots/s1.jpg -resize 1300x -gravity center -crop 1300x372+0+0 +repage -blur 0x6 -fill black -colorize 45% \( workshop/Thumbnail.png -resize 340x340 \) -gravity center -composite header.jpg
-magick docs/screenshots/s1.jpg -resize 1920x1080^ -gravity center -extent 1920x1080 -blur 0x8 -fill black -colorize 40% \( workshop/Thumbnail.png -filter point -resize 200% \) -gravity center -composite 01-cover.jpg
-magick docs/screenshots/s1.jpg -resize 1920x1080^ -gravity center -extent 1920x1080 02-chest-window.jpg
-magick docs/screenshots/s2.jpg -resize 1920x1080^ -gravity center -extent 1920x1080 03-building.jpg
-magick -size 1920x1080 xc:"#16151a" docs/screenshots/s3.jpg -gravity center -composite 04-settings.jpg
+mkdir -p dist/nexus-images
+magick docs/screenshots/s1.jpg -resize 1300x -gravity center -crop 1300x372+0+0 +repage -blur 0x6 -fill black -colorize 45% \( workshop/Thumbnail.png -resize 340x340 \) -gravity center -composite dist/nexus-images/header.jpg
+magick docs/screenshots/s1.jpg -resize 1920x1080^ -gravity center -extent 1920x1080 -blur 0x8 -fill black -colorize 40% \( workshop/Thumbnail.png -filter point -resize 200% \) -gravity center -composite dist/nexus-images/01-cover.jpg
+magick docs/screenshots/s1.jpg -resize 1920x1080^ -gravity center -extent 1920x1080 dist/nexus-images/02-chest-window.jpg
+magick docs/screenshots/s2.jpg -resize 1920x1080^ -gravity center -extent 1920x1080 dist/nexus-images/03-building.jpg
+magick -size 1920x1080 xc:"#16151a" docs/screenshots/s3.jpg -gravity center -composite dist/nexus-images/04-settings.jpg
 ```
 Permissions: open source (link GitHub); Harmony MIT license included.
 
