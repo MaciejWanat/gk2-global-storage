@@ -57,7 +57,8 @@
     <Copy SourceFiles="$(PackageDir)\Languages\gk2globalstorage\language.json" DestinationFolder="$(PackageDir)\CopyToGameFolder\Languages\gk2globalstorage" />
   </Target>
 
-  <!-- dotnet build GK2GlobalStorage.csproj -c Release -t:Workshop -p:ChangeNote="..."
+  <!-- dotnet build GK2GlobalStorage.csproj -c Release -t:Workshop -p:ChangeNoteFile=dist\changenote.bbcode
+       (or -p:ChangeNote="..." for one line)
        Lays out dist\workshop\ (the folder to pick in the in-game Workshop Creator, or to upload with SteamCMD)
        and, once WorkshopId is set, dist\workshop_item.vdf for: steamcmd +login <user> +workshop_build_item <vdf> +quit
        See docs\publishing.md. -->
@@ -65,6 +66,9 @@
     <PropertyGroup>
       <WorkshopDir>$(MSBuildThisFileDirectory)dist\workshop</WorkshopDir>
       <WorkshopVdf>$(MSBuildThisFileDirectory)dist\workshop_item.vdf</WorkshopVdf>
+      <!-- A file takes several lines (a [list] of changes) and needs no %2C / %3B escapes. -->
+      <ChangeNotePath Condition="'$(ChangeNoteFile)' != ''">$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(ChangeNoteFile)'))</ChangeNotePath>
+      <ChangeNote Condition="'$(ChangeNote)' == '' and '$(ChangeNotePath)' != ''">$([System.IO.File]::ReadAllText('$(ChangeNotePath)').Replace('%0D', '').TrimEnd())</ChangeNote>
       <ChangeNote Condition="'$(ChangeNote)' == ''">Version $(Version)</ChangeNote>
     </PropertyGroup>
     <ItemGroup>
