@@ -31,15 +31,20 @@ After that, updates are automatic.
 
 [b]Steam Deck:[/b] subscribe, switch to Desktop Mode, open [i]~/.local/share/Steam/steamapps/workshop/content/4358690/3815861361/CopyToGameFolder[/i] in Dolphin (Ctrl+H shows hidden folders; on an SD card the path starts with [i]/run/media/mmcblk0p1/steamapps[/i]), copy the two folders into the game folder (Steam → Manage → Browse local files), merge, back to Gaming Mode.
 
+[h2]Using it with No More Running Back[/h2]
+Both mods work together – I use them both. No More Running Back shows a one-time “Mixed mods notice” saying this mod takes items from chests in other areas. That is exactly what Global Storage does, so the notice is expected: confirm it once and both mods keep working.
+
+For details you can check my discussion with its author: https://steamcommunity.com/workshop/filedetails/discussion/3806668942/586188069723699438/
+
 [h2]Good to know[/h2]
 [list]
+[*]Any feedback on bugs and improvements welcomed! 🐛 Please let me know if something's wrong before leaving a negative review :)
 [*]No BepInEx. Does not change game files or your save – remove it any time by deleting [i]GraveyardKeeper2_Data\Managed\GK2GlobalStorage.dll[/i], the folder [i]GraveyardKeeper2_Data\Managed\GK2GlobalStorage[/i] and [i]Languages\gk2globalstorage[/i].
 [*]Do not combine with other mods that share storage between areas.
+[*]Factory: workstations only use what the conveyor belts bring, as in the game. Garden Storage and Alcohol Storage feed the belts, so they are not used as chests; Conveyor Chests are.
 [*]Tagged “Translation” because that is the only Workshop tag this game has.
 [/list]
 
 Tested on game version 1.009.1.
-
-Note: The newest version of the popular mod “No More Running Back” displays a warning suggesting that this mod can damage your saves. Installing multiple mods always carries a risk of them interacting in unexpected ways, but neither of the mods modifies the savegame, so I can't see why that would be – I personally use them both. I have tried to [url=https://steamcommunity.com/workshop/filedetails/discussion/3806668942/586188069723699438/]clear up the situation[/url], but there is no reason why this mod would harm your save, other than items moving unexpectedly.
 
 Open source: [url=https://github.com/MaciejWanat/gk2-global-storage]GitHub[/url] · Uses Harmony (MIT).
