@@ -33,7 +33,7 @@ namespace GK2GlobalStorage
 
         public static string FilePath => Path.Combine(Application.persistentDataPath, "GK2GlobalStorage.cfg");
 
-        private static string Render()
+        internal static string Render()
         {
             return
 $@"# Global Storage for Graveyard Keeper 2
@@ -116,20 +116,7 @@ PerfReport = {B(PerfReport)}
                     Debug.Log("[GK2GlobalStorage] Created config: " + path);
                     return;
                 }
-                foreach (string raw in File.ReadAllLines(path))
-                {
-                    string line = raw.Trim();
-                    if (line.Length == 0 || line.StartsWith("#"))
-                    {
-                        continue;
-                    }
-                    int eq = line.IndexOf('=');
-                    if (eq <= 0)
-                    {
-                        continue;
-                    }
-                    Apply(line.Substring(0, eq).Trim(), line.Substring(eq + 1).Trim());
-                }
+                Parse(File.ReadAllLines(path));
                 // Rewrite so options added in newer versions appear in the file.
                 Save();
                 Debug.Log("[GK2GlobalStorage] Config loaded: " + path);
@@ -137,6 +124,25 @@ PerfReport = {B(PerfReport)}
             catch (Exception ex)
             {
                 Debug.LogWarning("[GK2GlobalStorage] Cannot read config, using defaults: " + ex.Message);
+            }
+        }
+
+        // "key = value" lines; comments, blank lines and unknown keys are ignored.
+        internal static void Parse(IEnumerable<string> lines)
+        {
+            foreach (string raw in lines)
+            {
+                string line = raw.Trim();
+                if (line.Length == 0 || line.StartsWith("#"))
+                {
+                    continue;
+                }
+                int eq = line.IndexOf('=');
+                if (eq <= 0)
+                {
+                    continue;
+                }
+                Apply(line.Substring(0, eq).Trim(), line.Substring(eq + 1).Trim());
             }
         }
 

@@ -94,4 +94,17 @@ dotnet build GK2GlobalStorage.csproj -c Release -t:Zip
 
 Other install location: add `-p:GameDir="D:\SteamLibrary\steamapps\common\Graveyard Keeper 2"`.
 
+## Tests
+
+```
+dotnet test tests\GK2GlobalStorage.Tests
+```
+
+(with `-p:GameDir=...` as above for another install location). The tests run outside the game, on .NET 8, against the
+installed game's DLLs: some game types have default interface methods, which .NET Framework cannot load. They
+cover the config file, the chest pool, the patched game methods (building lists, workbenches, zombie and automatic
+crafters, factory workstations, chest windows), quest redirection, picker order and zombie deliveries, and they
+apply the mod's real Harmony patches, so a game update that removes or renames a patched method fails a test.
+`tests\GK2GlobalStorage.Tests\FakeGame.cs` builds a loaded save without the engine (how and why is described there).
+
 Harmony 2.4.2 (MIT) comes from NuGet.

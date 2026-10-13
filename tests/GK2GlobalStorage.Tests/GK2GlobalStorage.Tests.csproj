@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Unit tests for the core, run outside the game against the real game DLLs (nothing is copied into the repo).
+       dotnet test tests\GK2GlobalStorage.Tests -p:GameDir="D:\SteamLibrary\steamapps\common\Graveyard Keeper 2"
+       Shared settings (GameDir, Managed, Harmony version): Directory.Build.props.
+
+       .NET 8, not net472 like the mod: some game types have default interface methods, which Unity's Mono
+       supports and .NET Framework cannot load. The net472 core runs fine on .NET 8. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <RootNamespace>GK2GlobalStorage.Tests</RootNamespace>
+    <CoreDll>$(MSBuildThisFileDirectory)..\..\bin\$(Configuration)\GK2GlobalStorage.Core.dll</CoreDll>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="NUnit" Version="4.3.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="5.0.0" />
+    <PackageReference Include="Lib.Harmony" Version="$(HarmonyVersion)" />
+  </ItemGroup>
+
+  <!-- Build the net472 core first, then reference its DLL (a project reference across frameworks is refused). -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\GK2GlobalStorage.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" SetTargetFramework="TargetFramework=net472" />
+    <Reference Include="GK2GlobalStorage.Core"><HintPath>$(CoreDll)</HintPath></Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp"><HintPath>$(Managed)\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="LazyBearTechnology"><HintPath>$(Managed)\LazyBearTechnology.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(Managed)\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+
+  <!-- The game's assemblies next to the tests, so types load the way they do in the game. Framework assemblies
+       (mscorlib, netstandard, System*, Mono*) come from .NET instead. -->
+  <ItemGroup>
+    <GameAssembly Include="$(Managed)\*.dll" Exclude="$(Managed)\mscorlib.dll;$(Managed)\netstandard.dll;$(Managed)\System*.dll;$(Managed)\Mono*.dll;$(Managed)\GK2GlobalStorage*.dll" />
+    <None Include="@(GameAssembly)" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
+</Project>
