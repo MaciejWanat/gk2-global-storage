@@ -1,6 +1,8 @@
 # Publishing
 
-Channels: GitHub Releases (canonical download), Steam Workshop (auto-updates), Nexus Mods.
+Channels: [GitHub Releases](https://github.com/MaciejWanat/gk2-global-storage/releases) (canonical download),
+[Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3815861361) (auto-updates),
+[Nexus Mods](https://www.nexusmods.com/graveyardkeeper2/mods/385).
 Store texts: [store-pages.md](store-pages.md).
 
 ## How Workshop auto-update works
@@ -98,10 +100,25 @@ gh release create v<version> dist/GK2GlobalStorage-<version>.zip --title "Global
 
 ## Nexus Mods
 
-1. Create the mod page (Gameplay category), paste the Nexus BBCode from store-pages.md.
-2. Upload `GK2GlobalStorage-<version>-nexus.zip` as the main file, version = `<Version>`.
-3. Images tab: the thumbnail (full size) and the screenshots.
-4. Permissions: open source (link GitHub); Harmony MIT license included.
+Mod page: https://www.nexusmods.com/graveyardkeeper2/mods/385 (game `graveyardkeeper2`, mod id 385), created with
+1.0.3. The page itself can only be created and set up on the website; the Nexus API (v3) can add file versions.
+
+Update:
+1. Files: upload `GK2GlobalStorage-<version>-nexus.zip` as a new version of the main file, version = `<Version>`,
+   manual download only (the mod is installed by copying folders, not by a mod manager). Archive the old one.
+2. If the store text changed, paste the Nexus BBCode from store-pages.md into the description.
+
+Images (header 1300×372, gallery 1920×1080, cover first), made from the thumbnail and the screenshots with
+ImageMagick (Git Bash, into `dist/nexus-images/`, which is not committed):
+```
+mkdir -p dist/nexus-images
+magick docs/screenshots/s1.jpg -resize 1300x -gravity center -crop 1300x372+0+0 +repage -blur 0x6 -fill black -colorize 45% \( workshop/Thumbnail.png -resize 340x340 \) -gravity center -composite dist/nexus-images/header.jpg
+magick docs/screenshots/s1.jpg -resize 1920x1080^ -gravity center -extent 1920x1080 -blur 0x8 -fill black -colorize 40% \( workshop/Thumbnail.png -filter point -resize 200% \) -gravity center -composite dist/nexus-images/01-cover.jpg
+magick docs/screenshots/s1.jpg -resize 1920x1080^ -gravity center -extent 1920x1080 dist/nexus-images/02-chest-window.jpg
+magick docs/screenshots/s2.jpg -resize 1920x1080^ -gravity center -extent 1920x1080 dist/nexus-images/03-building.jpg
+magick -size 1920x1080 xc:"#16151a" docs/screenshots/s3.jpg -gravity center -composite dist/nexus-images/04-settings.jpg
+```
+Permissions: open source (link GitHub); Harmony MIT license included.
 
 ## Before every release
 
