@@ -16,6 +16,7 @@ SteamCMD upload (the Workshop page itself does not let us edit it), so change it
 
 ## Nexus Mods
 
+**Page:** https://www.nexusmods.com/graveyardkeeper2/mods/385
 **Name:** `Global Storage`
 **Summary:** Use items from any chest, in any area and on any level, for building, crafting, quests and trading. No BepInEx. Gamepad and Steam Deck friendly.
 **Category:** Gameplay · **Main file:** `dist/GK2GlobalStorage-<version>-nexus.zip` · **Requirements:** none
