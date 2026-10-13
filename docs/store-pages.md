@@ -21,6 +21,8 @@ SteamCMD upload (the Workshop page itself does not let us edit it), so change it
 **Category:** Gameplay · **Main file:** `dist/GK2GlobalStorage-<version>-nexus.zip` · **Requirements:** none
 
 ```bbcode
+Tired of constantly fetching items from chest to chest? Suffer no more.
+
 Use items from [b]any chest, in any area and on any level[/b] – for building, crafting, quests and trading. Items are taken from the chest they are in. No more running back for materials.
 
 [size=5][b]Features[/b][/size]
@@ -50,12 +52,21 @@ Use items from [b]any chest, in any area and on any level[/b] – for building, 
 [*]As with any mod, keep a backup of your saves.
 [/list]
 
+[size=5][b]Using it with No More Running Back[/b][/size]
+Both mods work together – I use them both. No More Running Back shows a one-time “Mixed mods notice” saying this mod takes items from chests in other areas. That is exactly what Global Storage does, so the notice is expected: confirm it once and both mods keep working.
+
+For details you can check my discussion with its author: https://steamcommunity.com/workshop/filedetails/discussion/3806668942/586188069723699438/
+
 [size=5][b]Good to know[/b][/size]
 [list]
+[*]Any feedback on bugs and improvements welcomed! Please let me know if something's wrong before leaving a negative review :)
 [*]No BepInEx. Does not change game files or your save – remove it any time by deleting [i]GraveyardKeeper2_Data\Managed\GK2GlobalStorage.dll[/i], the folder [i]GraveyardKeeper2_Data\Managed\GK2GlobalStorage[/i] and [i]Languages\gk2globalstorage[/i].
 [*]Do not combine with other mods that share storage between areas.
+[*]Factory: workstations only use what the conveyor belts bring, as in the game. Garden Storage and Alcohol Storage feed the belts, so they are not used as chests; Conveyor Chests are.
 [*]Also on the Steam Workshop with automatic updates.
 [/list]
+
+Tested on game version 1.009.1.
 
 Open source: [url=https://github.com/MaciejWanat/gk2-global-storage]GitHub[/url] · Uses Harmony (MIT).
 ```
