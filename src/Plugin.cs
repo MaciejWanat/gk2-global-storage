@@ -81,6 +81,8 @@ namespace GK2GlobalStorage
             }
             Patched = ok;
             host.AddComponent<Perf>();
+            host.AddComponent<ModConflictCheck>();
+            SpeedUp.Apply();
             if (Config.DeveloperMode && Config.PerfReport)
             {
                 Perf.SetActive(true);

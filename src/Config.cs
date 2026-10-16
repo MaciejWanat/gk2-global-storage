@@ -24,7 +24,20 @@ namespace GK2GlobalStorage
         public static bool PerfReport = false;
         public static bool DeveloperMode = false;
         public static bool LogZones = true;
+        public static bool WarnOtherMods = true;
+        public static bool SpeedUp = false;
         public static readonly HashSet<string> ExcludedZones = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public static readonly HashSet<string> IgnoredMods = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        // Turning the warning back on names every mod again, including the ones dismissed before.
+        public static void SetWarnOtherMods(bool value)
+        {
+            if (value && !WarnOtherMods)
+            {
+                IgnoredMods.Clear();
+            }
+            WarnOtherMods = value;
+        }
 
         // What the windows show: the master switches combined with each window switch.
         public static bool VendorShowsChests => Enabled && ShowOtherChests && Trading;
@@ -89,6 +102,18 @@ LogZones = {B(LogZones)}
 
 # Comma-separated zone ids that stay local (ids are printed in Player.log when LogZones = true).
 ExcludedZones = {string.Join(", ", ExcludedZones.OrderBy(z => z))}
+
+# Faster doors, house exits and teleports: shorter fades, no pause in black, and a move to another level
+# skips the game's memory cleanup (still done every 5th time and on every save load). Do not combine with
+# another mod's speed-up for doors and teleports.
+SpeedUp = {B(SpeedUp)}
+
+# A window names other mods that also change the bag, chests, stacks or picking up items (once per game
+# start). Using them together may result in unexpected behavior. Details go to Player.log.
+WarnOtherMods = {B(WarnOtherMods)}
+
+# Mods the window no longer names (""Don't warn about these again""): comma-separated ids from Player.log.
+IgnoredMods = {string.Join(", ", IgnoredMods.OrderBy(m => m))}
 
 # --- Developer options (file only) ---
 # true = show developer options in the Shift+F2 settings page. Restart the game after changing.
@@ -180,16 +205,22 @@ PerfReport = {B(PerfReport)}
                 case "perfreport": PerfReport = Bool(value, PerfReport); break;
                 case "developermode": DeveloperMode = Bool(value, DeveloperMode); break;
                 case "logzones": LogZones = Bool(value, LogZones); break;
-                case "excludedzones":
-                    ExcludedZones.Clear();
-                    foreach (string id in value.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
-                    {
-                        if (id.Trim().Length > 0)
-                        {
-                            ExcludedZones.Add(id.Trim());
-                        }
-                    }
-                    break;
+                case "warnothermods": WarnOtherMods = Bool(value, WarnOtherMods); break;
+                case "speedup": SpeedUp = Bool(value, SpeedUp); break;
+                case "excludedzones": List(value, ExcludedZones); break;
+                case "ignoredmods": List(value, IgnoredMods); break;
+            }
+        }
+
+        private static void List(string value, HashSet<string> target)
+        {
+            target.Clear();
+            foreach (string id in value.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                if (id.Trim().Length > 0)
+                {
+                    target.Add(id.Trim());
+                }
             }
         }
 

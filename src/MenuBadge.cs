@@ -99,9 +99,11 @@ namespace GK2GlobalStorage
             {
                 source = Plugin.InstallSource;
             }
+            int others = ModConflicts.Found.Count;
             return Accent("Global Storage") + " v" + Plugin.Version
                 + "\nstatus: " + status
-                + "\ninstalled: " + Accent(source);
+                + "\ninstalled: " + Accent(source)
+                + (others > 0 ? "\n" + Accent(others + " other inventory mod" + (others == 1 ? "" : "s") + " found (Shift+F2)", "#F2BF33") : "");
         }
 
         private string Accent(string value, string color = null)

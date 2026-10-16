@@ -32,6 +32,9 @@ namespace GK2GlobalStorage.Tests
                 Assert.That(Config.PerfReport, Is.False, nameof(Config.PerfReport));
                 Assert.That(Config.LogZones, Is.True, nameof(Config.LogZones));
                 Assert.That(Config.ExcludedZones, Is.Empty, nameof(Config.ExcludedZones));
+                Assert.That(Config.WarnOtherMods, Is.True, nameof(Config.WarnOtherMods));
+                Assert.That(Config.IgnoredMods, Is.Empty, nameof(Config.IgnoredMods));
+                Assert.That(Config.SpeedUp, Is.False, nameof(Config.SpeedUp));
             });
         }
 
@@ -56,6 +59,10 @@ namespace GK2GlobalStorage.Tests
             Config.LogZones = false;
             Config.ExcludedZones.Add("graveyard");
             Config.ExcludedZones.Add("church");
+            Config.WarnOtherMods = false;
+            Config.SpeedUp = true;
+            Config.IgnoredMods.Add("com.example.biggerbag");
+            Config.IgnoredMods.Add("linked.storage");
             string file = Config.Render();
 
             ConfigDefaults.Restore();
@@ -80,6 +87,9 @@ namespace GK2GlobalStorage.Tests
                 Assert.That(Config.PerfReport, Is.True);
                 Assert.That(Config.LogZones, Is.False);
                 Assert.That(Config.ExcludedZones, Is.EquivalentTo(new[] { "church", "graveyard" }));
+                Assert.That(Config.WarnOtherMods, Is.False);
+                Assert.That(Config.SpeedUp, Is.True);
+                Assert.That(Config.IgnoredMods, Is.EquivalentTo(new[] { "com.example.biggerbag", "linked.storage" }));
             });
         }
 
@@ -160,6 +170,29 @@ namespace GK2GlobalStorage.Tests
             Config.Parse(new[] { "ExcludedZones =" });
 
             Assert.That(Config.ExcludedZones, Is.Empty);
+        }
+
+        [Test]
+        public void TurningTheOtherModsWarningBackOnForgetsDismissedMods()
+        {
+            Config.IgnoredMods.Add("com.example.biggerbag");
+
+            Config.SetWarnOtherMods(false);
+            Assert.That(Config.IgnoredMods, Is.Not.Empty, "turning it off keeps the list");
+
+            Config.SetWarnOtherMods(true);
+            Assert.That(Config.WarnOtherMods, Is.True);
+            Assert.That(Config.IgnoredMods, Is.Empty);
+        }
+
+        [Test]
+        public void SwitchingTheOtherModsWarningOnWhenAlreadyOnKeepsDismissedMods()
+        {
+            Config.IgnoredMods.Add("com.example.biggerbag");
+
+            Config.SetWarnOtherMods(true);
+
+            Assert.That(Config.IgnoredMods, Is.EquivalentTo(new[] { "com.example.biggerbag" }));
         }
 
         [TestCase(true, true, true, true)]

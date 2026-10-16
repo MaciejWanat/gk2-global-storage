@@ -14,7 +14,7 @@ namespace GK2GlobalStorage
     {
         private const BindingFlags All = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
 
-        private static readonly string[] TargetTypes =
+        internal static readonly string[] TargetTypes =
         {
             "QuestFinishCheck",                     // quest "ready to finish" check
             "UIMultiAnswerOption",                  // dialog answers with item lock / price, and paying the price

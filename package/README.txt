@@ -81,10 +81,35 @@ Changes apply immediately and are saved to
                   the chests holding them
     ChestWindows  opening any chest; other chests are view only  (default off)
                   there. Slightly affects performance
+  SpeedUp         faster doors, house exits and teleports:      (default off)
+                  shorter fades, no pause in black, and a move
+                  to another level skips the game's memory
+                  cleanup (still done every 5th time and on
+                  every save load); do not combine with another
+                  mod's speed-up for doors and teleports
+  WarnOtherMods   names other mods that also change the bag,     (default on)
+                  chests, stacks or picking up items
   ExcludedZones   comma-separated zone ids that stay local (file only)
+  IgnoredMods     mods the warning no longer names (file only)
 
 Trading: items you put into a deal from a chest go back to that chest if you
 cancel the deal or close the window.
+
+OTHER MODS
+----------
+Other mods that change the bag, chests, stacks or picking up items (bigger bag,
+bigger stacks, another chest-sharing mod, pickup range...) may result in
+unexpected behavior together with this mod, for example items that are pulled
+toward you but never picked up, or items counted twice. Once the main menu is
+up, and again after a save loads, the mod looks for them:
+  - patches of other mods on the game's inventory, pickup and chest code
+    (also BepInEx / HarmonyX mods);
+  - BepInEx plugins whose name suggests such changes (mods that only change
+    bag or chest sizes in the save leave no patch to find).
+If any are found, a window names them once per game start, the main menu shows
+"other inventory mods found", and Player.log lists what each one changes.
+"Don't warn about these again" keeps that list quiet; turning WarnOtherMods off
+and on again in Shift+F2 names them all again.
 
 UNINSTALL
 ---------

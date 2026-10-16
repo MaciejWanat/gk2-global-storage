@@ -37,6 +37,15 @@ which hands it the Harmony already loaded.
 | `PlayerData.CollectDrop` (optional, off by default) | picked-up items go to the nearest chest with room in the current zone; bag if none, for quest items and for items on the quick bar |
 | `ChestInteractionHandler.Interact` + `MultiInventory(WorldZoneData, WgoData, bool)` ctor (option `ChestWindows`, off by default) | opening a chest also lists other areas' chests, view only like the game shows the area's chests |
 | `LanguageModLoader.AppendLanguages` | hides the loader pack |
+| `PlayerController.SetControlTakenType` + `PlayerController.Teleport` + `UIBasicFade.FadeIn/FadeOut` + `MainGame.HiddenOptimization` (option `SpeedUp`, off by default; patched only while on, own Harmony id) | doors and teleports: no 0.3 s pause in black, both fades 0.1 s instead of 0.3 s (only while a move is under way), a level change skips `Resources.UnloadUnusedAssets` except every 5th; not meant to be combined with another mod's speed-up for the same methods (`src/SpeedUp.cs`) |
+
+Other mods check (`src/ModConflicts.cs`, option `WarnOtherMods`): once the main menu is up and after each save load,
+every Harmony copy in memory (ours, BepInEx's HarmonyX, other mods' copies) is asked by reflection for the owners of
+every patch. Another owner on the inventory, pickup and chest-list methods (`Item`/`Inventory` space and count
+methods, `MultiInventory`, `DropSearcher`, `DropCollector`, `PlayerData.CollectDrop`) or on a method this mod patches
+is named in a window (the settings window in notice mode), on the main menu badge and in Player.log. BepInEx plugins
+whose name suggests inventory changes are named too: mods that edit bag or chest sizes in the save leave no patch.
+Only this mod's own patches (Harmony ids `gk2globalstorage*`, assembly `GK2GlobalStorage.Core`) are skipped.
 
 Global chests = every container with `OpenInMultiInventory` in every `WorldZoneData` of every
 `GameSceneData` in the save (the same rule the game uses per zone).
@@ -103,8 +112,10 @@ dotnet test tests\GK2GlobalStorage.Tests
 (with `-p:GameDir=...` as above for another install location). The tests run outside the game, on .NET 8, against the
 installed game's DLLs: some game types have default interface methods, which .NET Framework cannot load. They
 cover the config file, the chest pool, the patched game methods (building lists, workbenches, zombie and automatic
-crafters, factory workstations, chest windows), quest redirection, picker order and zombie deliveries, and they
-apply the mod's real Harmony patches, so a game update that removes or renames a patched method fails a test.
+crafters, factory workstations, chest windows), quest redirection, picker order, zombie deliveries, the other mods
+check (a test owner really patches game methods and must be found; this mod's own patches must not) and the
+speed-up (move timing, fade times, sweep skipping, patches installed and removed with the option), and they apply the mod's
+real Harmony patches, so a game update that removes or renames a patched method fails a test.
 `tests\GK2GlobalStorage.Tests\FakeGame.cs` builds a loaded save without the engine (how and why is described there).
 
 Harmony 2.4.2 (MIT) comes from NuGet.

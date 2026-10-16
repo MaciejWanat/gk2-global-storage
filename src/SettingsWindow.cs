@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using LazyBearTechnology;
 using UnityEngine;
 using UnityEngine.UI;
@@ -66,16 +67,31 @@ namespace GK2GlobalStorage
                 get = () => Config.PickersOnlyUsable, set = v => Config.PickersOnlyUsable = v },
             new Row { name = "Chest windows", hint = "Opening any chest; other chests are view only there. Slightly affects performance.", level = 2,
                 get = () => Config.ChestWindows, set = v => Config.ChestWindows = v },
+            new Row { name = "Faster doors and teleports", hint = "Shorter fades, no pause in black, quicker level changes. Do not combine with another mod's speed-up",
+                get = () => Config.SpeedUp, set = v => { Config.SpeedUp = v; SpeedUp.Apply(); } },
+            new Row { name = "Warn about other inventory mods", hint = "At start, names other mods that also change the bag, chests or stacks",
+                get = () => Config.WarnOtherMods, set = Config.SetWarnOtherMods },
             new Row { name = "Performance report", hint = "Developer: every 30 s writes timings to GK2GlobalStorage-perf.txt", dev = true,
                 get = () => Config.PerfReport, set = v => { Config.PerfReport = v; Perf.SetActive(v); } },
         };
 
+        // Set by ModConflicts: open as the other mods notice as soon as the game allows it.
+        private static bool noticeRequested;
+
+        public static void RequestNotice()
+        {
+            noticeRequested = true;
+        }
+
         private bool open;
+        // Showing the other mods notice instead of the settings; 0 = OK, 1 = don't warn again.
+        private bool notice;
+        private int noticeChoice;
         private bool inputWasActive;
         private int restoreInputAtFrame = -1;
         private GameObject blocker;
         private Rect rect;
-        private GUIStyle panel, title, label, hint, button, on, off, row, rowSelected;
+        private GUIStyle panel, title, label, hint, warning, button, buttonSelected, on, off, row, rowSelected;
         private int selected;
         private Vector2 scroll;
         private bool scrollToSelected;
@@ -108,12 +124,53 @@ namespace GK2GlobalStorage
                     SetOpen(false);
                     return;
                 }
-                Navigate();
+                if (notice)
+                {
+                    NavigateNotice();
+                }
+                else
+                {
+                    Navigate();
+                }
             }
             else if (toggle && Allowed())
             {
                 SetOpen(true);
             }
+            else if (noticeRequested && Allowed())
+            {
+                noticeRequested = false;
+                if (ModConflicts.NeedsNotice(ModConflicts.Found).Count > 0)
+                {
+                    notice = true;
+                    noticeChoice = 0;
+                    SetOpen(true);
+                }
+            }
+        }
+
+        private void NavigateNotice()
+        {
+            if (Pad.Vertical() != 0 || Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow)
+                || Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow) || Input.GetKeyDown(KeyCode.Tab))
+            {
+                noticeChoice = 1 - noticeChoice;
+                LazyAudio.PlayAndForget("gui_hover_light");
+            }
+            if (Pad.Down(Pad.A) || Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Space))
+            {
+                CloseNotice(noticeChoice == 1);
+            }
+        }
+
+        private void CloseNotice(bool dontWarnAgain)
+        {
+            LazyAudio.PlayAndForget("gui_click");
+            if (dontWarnAgain)
+            {
+                ModConflicts.Ignore(ModConflicts.NeedsNotice(ModConflicts.Found));
+            }
+            SetOpen(false);
         }
 
         // Gamepad (D-pad / left stick + A) and keyboard (arrows + Enter/Space) control of the rows.
@@ -198,6 +255,7 @@ namespace GK2GlobalStorage
             }
             else
             {
+                notice = false;
                 if (blocker != null)
                 {
                     Destroy(blocker);
@@ -240,8 +298,43 @@ namespace GK2GlobalStorage
             }
         }
 
+        private void DrawNotice()
+        {
+            GUILayout.Label("Global Storage — other mods found", title);
+            GUILayout.Space(10f);
+            GUILayout.Label("These mods also change the inventory (bag, chests, stacks or picking up items). Using them together with "
+                + "Global Storage may result in unexpected behavior, for example items that cannot be picked up or are counted twice. "
+                + "If something goes wrong, check first without them.", label);
+            GUILayout.Space(8f);
+            foreach (ModConflicts.Finding f in ModConflicts.NeedsNotice(ModConflicts.Found))
+            {
+                GUILayout.Label("• " + f.Name + " — " + string.Join(", ", f.Areas), label);
+            }
+            GUILayout.Space(8f);
+            GUILayout.Label("Details are in Player.log. This warning can be turned off in Shift+F2.", hint);
+            GUILayout.Space(10f);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Keyboard: arrows, Enter\nGamepad / Steam Deck: D-pad, A", hint);
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button("Don't warn about these again", noticeChoice == 1 ? buttonSelected : button, GUILayout.Height(34f)))
+            {
+                CloseNotice(true);
+            }
+            GUILayout.Space(8f);
+            if (GUILayout.Button("OK", noticeChoice == 0 ? buttonSelected : button, GUILayout.Width(120f), GUILayout.Height(34f)))
+            {
+                CloseNotice(false);
+            }
+            GUILayout.EndHorizontal();
+        }
+
         private void Draw(int id)
         {
+            if (notice)
+            {
+                DrawNotice();
+                return;
+            }
             GUILayout.Label("Global Storage — Settings", title);
             GUILayout.Label("v" + Plugin.Version + " (" + Plugin.Source + ")", hint);
             GUILayout.Space(10f);
@@ -302,6 +395,12 @@ namespace GK2GlobalStorage
             }
             GUILayout.EndScrollView();
             GUILayout.Space(8f);
+            if (ModConflicts.Found.Count > 0)
+            {
+                GUILayout.Label("Other mods that also change the inventory: " + string.Join(", ", ModConflicts.Found.Select(f => f.Name))
+                    + ". Using them together may result in unexpected behavior (details in Player.log).", warning);
+                GUILayout.Space(6f);
+            }
             GUILayout.Label("File: " + Config.FilePath, hint);
             GUILayout.Space(6f);
             GUILayout.BeginHorizontal();
@@ -332,7 +431,11 @@ namespace GK2GlobalStorage
             label.normal.textColor = new Color(0.92f, 0.9f, 0.86f);
             hint = new GUIStyle(GUI.skin.label) { fontSize = 14, wordWrap = true };
             hint.normal.textColor = new Color(0.65f, 0.62f, 0.58f);
+            warning = new GUIStyle(hint);
+            warning.normal.textColor = new Color(0.95f, 0.75f, 0.2f);
             button = new GUIStyle(GUI.skin.button) { fontSize = 18 };
+            buttonSelected = new GUIStyle(button) { fontStyle = FontStyle.Bold };
+            buttonSelected.normal.textColor = buttonSelected.hover.textColor = new Color(1f, 0.85f, 0.55f);
             on = new GUIStyle(button) { fontStyle = FontStyle.Bold };
             on.normal.textColor = on.hover.textColor = new Color(0.55f, 0.85f, 0.4f);
             off = new GUIStyle(button);
