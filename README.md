@@ -105,8 +105,8 @@ dotnet test tests\GK2GlobalStorage.Tests
 installed game's DLLs: some game types have default interface methods, which .NET Framework cannot load. They
 cover the config file, the chest pool, the patched game methods (building lists, workbenches, zombie and automatic
 crafters, factory workstations, chest windows), quest redirection, picker order, zombie deliveries and factory input
-chest refills, and they
-apply the mod's real Harmony patches, so a game update that removes or renames a patched method fails a test.
+chest refills, and they apply the mod's real Harmony patches, so a game update that removes or renames a patched
+method fails a test.
 `tests\GK2GlobalStorage.Tests\FakeGame.cs` builds a loaded save without the engine (how and why is described there).
 
 Harmony 2.4.2 (MIT) comes from NuGet.

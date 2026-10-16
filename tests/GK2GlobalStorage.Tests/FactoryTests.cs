@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.Collections;
 using HarmonyLib;
 using NUnit.Framework;
 using static GK2GlobalStorage.Tests.FakeGame;
@@ -19,7 +19,7 @@ namespace GK2GlobalStorage.Tests
         public void Areas()
         {
             // Chest + item pairs that recently could not be refilled wait 3 s before the next try.
-            ((Dictionary<string, int>)AccessTools.Field(typeof(FactoryPatches), "notAvailable").GetValue(null)).Clear();
+            ((IDictionary)AccessTools.Field(typeof(FactoryPatches), "notAvailable").GetValue(null)).Clear();
             Item("wood", stackCount: 100);
             Item("stone", stackCount: 100);
             ObjectDef("chest");

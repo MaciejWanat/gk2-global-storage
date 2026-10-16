@@ -17,8 +17,8 @@ namespace GK2GlobalStorage
     {
         private const int RetryMs = 3000;
 
-        // Chest + item that could not be refilled recently; belts ask every step.
-        private static readonly Dictionary<string, int> notAvailable = new Dictionary<string, int>();
+        // Chest + item that could not be refilled recently; belts ask every step, so the key allocates nothing.
+        private static readonly Dictionary<(Guid chest, string item), int> notAvailable = new Dictionary<(Guid chest, string item), int>();
 
         public static int Apply(Harmony harmony)
         {
@@ -79,7 +79,7 @@ namespace GK2GlobalStorage
             {
                 return 0;
             }
-            string key = chest.UniqueId + "|" + itemId;
+            (Guid, string) key = (chest.UniqueId.Guid, itemId);
             if (notAvailable.TryGetValue(key, out int until) && unchecked(Environment.TickCount - until) < 0)
             {
                 return 0;
@@ -119,10 +119,22 @@ namespace GK2GlobalStorage
             }
         }
 
+        // A loop, not List.Find: this runs every belt step and a lambda capturing the cell would allocate each time.
         private static string SlotItem(List<ConveyorChestSlotData> slots, ConveyorComponent cell)
         {
-            ConveyorChestSlotData slot = slots?.Find(s => s.conveyorWgoDataUniqueId == cell.WgoData.UniqueId);
-            return slot?.slotItemId;
+            if (slots == null)
+            {
+                return null;
+            }
+            SGuid cellId = cell.WgoData.UniqueId;
+            for (int i = 0; i < slots.Count; i++)
+            {
+                if (slots[i].conveyorWgoDataUniqueId == cellId)
+                {
+                    return slots[i].slotItemId;
+                }
+            }
+            return null;
         }
 
         // Input chests that give to a belt cell.
