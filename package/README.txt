@@ -45,7 +45,7 @@ language list.
 
 Check it works: the main menu shows "Global Storage v1.0.3 / status: on" in the
 top right corner. Player.log in %USERPROFILE%\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper 2
-should contain "[GK2GlobalStorage] Global Storage 1.0.3 (game folder) loaded (9/9 patches)".
+should contain "[GK2GlobalStorage] Global Storage 1.0.3 (game folder) loaded (10/10 patches)".
 
 SETTINGS
 --------
@@ -66,6 +66,13 @@ Changes apply immediately and are saved to
                   chests in other areas
   AutoCrafters    crafters with no worker also take from all     (default off)
                   your chests; can empty them unnoticed
+  Factory         a factory input chest (Conveyor Chest, Garden   (default off)
+                  or Alcohol Storage) that runs out of the item
+                  set on one of its belt slots gets a stack of it
+                  from your other chests; a Stockpile likewise for
+                  its item. The belts still carry everything. To
+                  set a slot's item, put one into the chest, click
+                  the slot, then click the item
   FuelContainers  fuel slots of furnaces and similar objects     (default off)
                   count as chests
   PickupsToChest  items you pick up go to the nearest chest      (default off)

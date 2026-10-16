@@ -122,7 +122,7 @@ Permissions: open source (link GitHub); Harmony MIT license included.
 
 ## Before every release
 
-- [ ] Player.log shows `(9/9 patches)` and `Quest patch: N method(s) redirected`
+- [ ] Player.log shows `(10/10 patches)` and `Quest patch: N method(s) redirected`
 - [ ] Settings window opens with Shift+F2 and with L3+R3 on a gamepad; A toggles, B closes
 - [ ] Craft in zone X with items only in a chest in zone Y → chest Y loses them
 - [ ] Quest turn-in and vendor sale from chests work; cancelled vendor deal returns items to the chest

@@ -26,6 +26,7 @@ namespace GK2GlobalStorage.Tests
                 Assert.That(Config.ChestWindows, Is.False, nameof(Config.ChestWindows));
                 Assert.That(Config.ZombieWorkers, Is.False, nameof(Config.ZombieWorkers));
                 Assert.That(Config.AutoCrafters, Is.False, nameof(Config.AutoCrafters));
+                Assert.That(Config.Factory, Is.False, nameof(Config.Factory));
                 Assert.That(Config.FuelContainers, Is.False, nameof(Config.FuelContainers));
                 Assert.That(Config.PickupsToChest, Is.False, nameof(Config.PickupsToChest));
                 Assert.That(Config.DeveloperMode, Is.False, nameof(Config.DeveloperMode));
@@ -49,6 +50,7 @@ namespace GK2GlobalStorage.Tests
             Config.ChestWindows = true;
             Config.ZombieWorkers = true;
             Config.AutoCrafters = true;
+            Config.Factory = true;
             Config.FuelContainers = true;
             Config.PickupsToChest = true;
             Config.DeveloperMode = true;
@@ -74,6 +76,7 @@ namespace GK2GlobalStorage.Tests
                 Assert.That(Config.ChestWindows, Is.True);
                 Assert.That(Config.ZombieWorkers, Is.True);
                 Assert.That(Config.AutoCrafters, Is.True);
+                Assert.That(Config.Factory, Is.True);
                 Assert.That(Config.FuelContainers, Is.True);
                 Assert.That(Config.PickupsToChest, Is.True);
                 Assert.That(Config.DeveloperMode, Is.True);

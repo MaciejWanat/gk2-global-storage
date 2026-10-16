@@ -156,6 +156,31 @@ namespace GK2GlobalStorage.Tests
             return wgo;
         }
 
+        // A placed factory object (belt input chest, belt cell...) with the game's component for its conveyorType.
+        public static ConveyorWgoData PlaceConveyor(WorldZoneData zone, string defId, params (string id, int count)[] items)
+        {
+            ConveyorWgoData wgo = Place<ConveyorWgoData>(zone, defId, default, items);
+            AccessTools.Method(typeof(ConveyorWgoData), "TryCreateConveyorComponent").Invoke(wgo, new object[] { wgo.Definition.conveyorType });
+            return wgo;
+        }
+
+        // Connects a free belt slot of an input chest (or a Stockpile) to a belt cell, as the game's Connect does but
+        // without redrawing the belt, which needs the engine. slotItem: the item set on that slot.
+        public static void Feed(ConveyorWgoData chest, ConveyorWgoData cell, string slotItem = null)
+        {
+            ConveyorComponent giver = chest.ConveyorComponent;
+            if (giver is ConveyorPalletComponent)
+            {
+                Set(giver, "connectedWgoDataUniqueId", cell.UniqueId);
+                return;
+            }
+            ((List<SGuid>)AccessTools.Field(giver.GetType(), "connectedWgoDataUniqueId").GetValue(giver)).Add(cell.UniqueId);
+            List<ConveyorChestSlotData> slots = giver is ConveyorChestComponent c ? c.SlotsData : ((ConveyorChestOutComponent)giver).SlotsData;
+            ConveyorChestSlotData slot = slots.Find(s => SGuid.IsNullOrEmpty(s.conveyorWgoDataUniqueId));
+            slot.conveyorWgoDataUniqueId = cell.UniqueId;
+            slot.slotItemId = slotItem;
+        }
+
         public static void Fill(Inventory inventory, params (string id, int count)[] items)
         {
             foreach ((string id, int count) in items)

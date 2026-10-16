@@ -19,6 +19,7 @@ namespace GK2GlobalStorage
         public static bool ChestWindows = false;
         public static bool ZombieWorkers = false;
         public static bool AutoCrafters = false;
+        public static bool Factory = false;
         public static bool FuelContainers = false;
         public static bool PickupsToChest = false;
         public static bool PerfReport = false;
@@ -58,6 +59,11 @@ ZombieWorkers = {B(ZombieWorkers)}
 
 # Automatic crafters (no worker) also take materials from every zone. Can quietly drain chests everywhere.
 AutoCrafters = {B(AutoCrafters)}
+
+# Factory: when a belt input chest (Conveyor Chest, Garden Storage, Alcohol Storage) runs out of the item set on
+# one of its belt slots, a stack of it comes from the chests in every zone; a Stockpile likewise for its item.
+# The belts still carry everything. A chest that feeds a belt never gives to another one.
+Factory = {B(Factory)}
 
 # Include fuel containers (e.g. furnace fuel slots) in the global pool.
 FuelContainers = {B(FuelContainers)}
@@ -175,6 +181,7 @@ PerfReport = {B(PerfReport)}
                 case "otherwindows": ChestWindows = Bool(value, ChestWindows); break;
                 case "zombieworkers": ZombieWorkers = Bool(value, ZombieWorkers); break;
                 case "autocrafters": AutoCrafters = Bool(value, AutoCrafters); break;
+                case "factory": Factory = Bool(value, Factory); break;
                 case "fuelcontainers": FuelContainers = Bool(value, FuelContainers); break;
                 case "pickupstochest": PickupsToChest = Bool(value, PickupsToChest); break;
                 case "perfreport": PerfReport = Bool(value, PerfReport); break;

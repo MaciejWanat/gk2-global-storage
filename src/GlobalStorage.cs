@@ -15,6 +15,9 @@ namespace GK2GlobalStorage
 
         private static readonly List<Inventory> cached = new List<Inventory>();
 
+        // Object of each cached inventory, same order.
+        private static readonly List<WgoData> cachedOwners = new List<WgoData>();
+
         private static WorldData cachedFor;
 
         private static int cachedAt;
@@ -68,6 +71,13 @@ namespace GK2GlobalStorage
             return Get();
         }
 
+        // The object each inventory of All() belongs to, same order. Call right after All(); do not modify.
+        public static List<WgoData> Owners()
+        {
+            Get();
+            return cachedOwners;
+        }
+
         public static int CountInChests(string itemId)
         {
             long t = Perf.Begin();
@@ -98,12 +108,43 @@ namespace GK2GlobalStorage
             return removed;
         }
 
+        // Moves up to count items from the sources into the targets, both in list order. What does not fit in any
+        // target goes back to the chest it came from. Returns how many were moved.
+        public static int Move(string itemId, int count, List<Inventory> sources, List<Inventory> targets)
+        {
+            int left = count;
+            for (int s = 0; s < sources.Count && left > 0; s++)
+            {
+                foreach (Item stack in sources[s].RemoveItemById(itemId, left))
+                {
+                    left -= stack.Count;
+                    // The game adds what fits and keeps the rest on the stack (non-stackable items one at a time).
+                    for (int i = 0; i < targets.Count && stack.Count > 0; i++)
+                    {
+                        while (stack.Count > 0 && targets[i].AddItemToInventory(stack, out _))
+                        {
+                        }
+                    }
+                    if (stack.Count > 0)
+                    {
+                        // Should not happen (callers check room first): put it back where it came from.
+                        left += stack.Count;
+                        while (stack.Count > 0 && sources[s].AddItemToInventory(stack, out _))
+                        {
+                        }
+                    }
+                }
+            }
+            return count - left;
+        }
+
         private static List<Inventory> Get()
         {
             WorldData worldData = MainGame.Instance?.GameSave?.worldData;
             if (worldData == null || !worldData.HasCache)
             {
                 cached.Clear();
+                cachedOwners.Clear();
                 cachedFor = null;
                 return cached;
             }
@@ -113,16 +154,17 @@ namespace GK2GlobalStorage
                 return cached;
             }
             long t = Perf.Begin();
-            Collect(worldData, cached);
+            Collect(worldData, cached, cachedOwners);
             Perf.End("Rebuild chest pool", t);
             cachedFor = worldData;
             cachedAt = now;
             return cached;
         }
 
-        private static void Collect(WorldData worldData, List<Inventory> result)
+        private static void Collect(WorldData worldData, List<Inventory> result, List<WgoData> owners)
         {
             result.Clear();
+            owners.Clear();
             HashSet<Inventory> seen = new HashSet<Inventory>(RefComparer.Instance);
             bool log = Config.LogZones && loggedFor != worldData;
             StringBuilder report = log ? new StringBuilder() : null;
@@ -144,10 +186,12 @@ namespace GK2GlobalStorage
                     {
                         foreach (SGuid guid in zone.wgoDataList)
                         {
-                            Inventory inventory = Storage(worldData.GetWgoData(guid));
+                            WgoData wgoData = worldData.GetWgoData(guid);
+                            Inventory inventory = Storage(wgoData);
                             if (inventory != null && seen.Add(inventory))
                             {
                                 result.Add(inventory);
+                                owners.Add(wgoData);
                                 count++;
                             }
                         }

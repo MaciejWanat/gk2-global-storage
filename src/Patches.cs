@@ -109,6 +109,15 @@ namespace GK2GlobalStorage
 
             try
             {
+                ok += FactoryPatches.Apply(harmony);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning("[GK2GlobalStorage] Cannot patch factory chests: " + ex.Message);
+            }
+
+            try
+            {
                 ok += PickupPatches.Apply(harmony);
             }
             catch (Exception ex)

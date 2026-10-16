@@ -52,6 +52,8 @@ namespace GK2GlobalStorage
                 get = () => Config.ZombieWorkers, set = v => Config.ZombieWorkers = v },
             new Row { name = "Automatic crafters", hint = "Crafters with no worker also take from all your chests; can empty them unnoticed", level = 1,
                 get = () => Config.AutoCrafters, set = v => Config.AutoCrafters = v },
+            new Row { name = "Factory input chests", hint = "Conveyor chests with a slot item set and stockpiles refill from all your chests", level = 1,
+                get = () => Config.Factory, set = v => Config.Factory = v },
             new Row { name = "Fuel containers", hint = "Fuel slots of furnaces and similar objects count as chests", level = 1,
                 get = () => Config.FuelContainers, set = v => { Config.FuelContainers = v; GlobalStorage.Invalidate(); } },
             new Row { name = "Pickups go to nearest chest", hint = "Items you pick up go to the nearest chest with room in this area, otherwise to your bag", level = 1,
