@@ -143,33 +143,11 @@ namespace GK2GlobalStorage
                 return false;
             }
 
-            int left = missing;
-            for (int s = 0; s < sources.Count && left > 0; s++)
-            {
-                foreach (Item stack in sources[s].RemoveItemById(need.id, left))
-                {
-                    left -= stack.Count;
-                    // The game adds what fits and keeps the rest on the stack (non-stackable items one at a time).
-                    for (int i = 0; i < targets.Count && stack.Count > 0; i++)
-                    {
-                        while (stack.Count > 0 && targets[i].AddItemToInventory(stack, out _))
-                        {
-                        }
-                    }
-                    if (stack.Count > 0)
-                    {
-                        // Should not happen (room was checked): put it back where it came from.
-                        left += stack.Count;
-                        while (stack.Count > 0 && sources[s].AddItemToInventory(stack, out _))
-                        {
-                        }
-                    }
-                }
-            }
+            int moved = GlobalStorage.Move(need.id, missing, sources, targets);
             GlobalStorage.Invalidate();
-            Debug.Log("[GK2GlobalStorage] Zombie delivery: " + (missing - left) + " x " + need.id
+            Debug.Log("[GK2GlobalStorage] Zombie delivery: " + moved + " x " + need.id
                 + " moved from other areas into " + zone.id);
-            return left <= 0;
+            return moved >= missing;
         }
 
         // Same as the game, except the nearest chest holding any of the item wins.

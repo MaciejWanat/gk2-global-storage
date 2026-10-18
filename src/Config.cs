@@ -19,8 +19,10 @@ namespace GK2GlobalStorage
         public static bool ChestWindows = false;
         public static bool ZombieWorkers = false;
         public static bool AutoCrafters = false;
+        public static bool Factory = false;
         public static bool FuelContainers = false;
         public static bool PickupsToChest = false;
+        public static bool PickupsInFactory = false;
         public static bool PerfReport = false;
         public static bool DeveloperMode = false;
         public static bool LogZones = true;
@@ -59,6 +61,12 @@ ZombieWorkers = {B(ZombieWorkers)}
 # Automatic crafters (no worker) also take materials from every zone. Can quietly drain chests everywhere.
 AutoCrafters = {B(AutoCrafters)}
 
+# Factory: any item from Global Storage on a belt. In a Conveyor Chest, Garden Storage or Alcohol Storage, click
+# an output (belt slot), scroll down to the Global Storage section and click the item. When the chest runs out of
+# it, a stack comes from the chests in every zone; a Stockpile likewise for its item. The belts still carry
+# everything. A chest that feeds a belt never gives to another one, so items only such chests hold are not offered.
+Factory = {B(Factory)}
+
 # Include fuel containers (e.g. furnace fuel slots) in the global pool.
 FuelContainers = {B(FuelContainers)}
 
@@ -66,11 +74,16 @@ FuelContainers = {B(FuelContainers)}
 # in the area you are in, instead of your bag. No chest with room there: bag as usual.
 PickupsToChest = {B(PickupsToChest)}
 
+# With PickupsToChest: also in the factory (its belt hall and storage room). Off: there, picked-up items go to
+# your bag, so they do not end up in the chests that feed the belts.
+PickupsInFactory = {B(PickupsInFactory)}
+
 # --- Showing chests of other areas in windows (each chest as its own section) ---
 # Master switch for the two options below. The rest of each window always stays as in the game.
 ShowOtherChests = {B(ShowOtherChests)}
 
-# Vendor windows: chests holding something the vendor buys, so you can sell straight from them.
+# Vendor windows: chests holding something the vendor buys, so you can sell straight from them. Your side then
+# shows first what the vendor buys, items that give its gratitude at the front (only the order on screen).
 Trading = {B(Trading)}
 
 # Item pickers: windows where you choose an item (seeds, organs, sermons, grave decorations, alchemy
@@ -175,8 +188,10 @@ PerfReport = {B(PerfReport)}
                 case "otherwindows": ChestWindows = Bool(value, ChestWindows); break;
                 case "zombieworkers": ZombieWorkers = Bool(value, ZombieWorkers); break;
                 case "autocrafters": AutoCrafters = Bool(value, AutoCrafters); break;
+                case "factory": Factory = Bool(value, Factory); break;
                 case "fuelcontainers": FuelContainers = Bool(value, FuelContainers); break;
                 case "pickupstochest": PickupsToChest = Bool(value, PickupsToChest); break;
+                case "pickupsinfactory": PickupsInFactory = Bool(value, PickupsInFactory); break;
                 case "perfreport": PerfReport = Bool(value, PerfReport); break;
                 case "developermode": DeveloperMode = Bool(value, DeveloperMode); break;
                 case "logzones": LogZones = Bool(value, LogZones); break;

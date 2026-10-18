@@ -36,12 +36,36 @@ namespace GK2GlobalStorage.Tests
         [Test]
         public void ObjectsTheGameDoesNotTreatAsStorageAreLeftOut()
         {
-            // Garden Storage, the wine pallet and similar conveyor outputs have open_in_multi_inventory = false.
-            ObjectDef("garden_bags_storage_1", storage: false);
-            Place(yard, "garden_bags_storage_1", items: ("wood", 5));
+            // open_in_multi_inventory = false, and not a factory chest.
+            ObjectDef("display_stand", storage: false);
+            Place(yard, "display_stand", items: ("wood", 5));
 
             Assert.That(GlobalStorage.All(), Is.Empty);
             Assert.That(GlobalStorage.CountInChests("wood"), Is.Zero);
+        }
+
+        [TestCase(ConveyorElementType.ChestOut)]
+        [TestCase(ConveyorElementType.Chest)]
+        [TestCase(ConveyorElementType.Pallet)]
+        public void FactoryChestsCountEvenWhenTheGameDoesNotTreatThemAsStorage(ConveyorElementType type)
+        {
+            // Garden Storage and Alcohol Storage (ChestOut) have open_in_multi_inventory = false in the game data.
+            ObjectDef("factory_chest", storage: false).conveyorType = type;
+            WgoData chest = Place(Zone(Scene("main"), "conveyor"), "factory_chest", items: ("wood", 5));
+
+            Assert.That(GlobalStorage.All(), Is.EqualTo(new[] { chest.Inventory }));
+            Assert.That(GlobalStorage.CountInChests("wood"), Is.EqualTo(5));
+        }
+
+        [TestCase(ConveyorElementType.Cell)]
+        [TestCase(ConveyorElementType.Splitter)]
+        [TestCase(ConveyorElementType.Workbench)]
+        public void BeltsAndFactoryWorkbenchesAreNotChests(ConveyorElementType type)
+        {
+            ObjectDef("belt_part", inventorySize: 1, storage: false).conveyorType = type;
+            Place(Zone(Scene("main"), "conveyor"), "belt_part", items: ("wood", 1));
+
+            Assert.That(GlobalStorage.All(), Is.Empty);
         }
 
         [Test]

@@ -33,7 +33,7 @@ Use items from [b]any chest, in any area and on any level[/b] – for building, 
 [*][b]Vendors[/b] – sell straight from your chests
 [*][b]Item pickers[/b] (seeds, organs, grave decorations…) – show only the items they can use, from the chests that have them
 [*][b]Optional:[/b] pickups go to the nearest chest in the area, zombie carriers bring materials from all chests (nearest first), automatic crafters use all chests, opening a chest shows your other chests
-[*]Settings in game: [b]Shift+F2[/b], or [b]L3 + R3[/b] on a gamepad / Steam Deck
+[*]Settings in game: [b]Shift+F2[/b], or [b]L3 + R3[/b] (click both sticks) on a gamepad / Steam Deck
 [/list]
 
 [size=5][b]Install[/b][/size]
@@ -53,21 +53,22 @@ Use items from [b]any chest, in any area and on any level[/b] – for building, 
 [*]As with any mod, keep a backup of your saves.
 [/list]
 
-[size=5][b]Using it with No More Running Back[/b][/size]
-Both mods work together – I use them both. No More Running Back shows a one-time “Mixed mods notice” saying this mod takes items from chests in other areas. That is exactly what Global Storage does, so the notice is expected: confirm it once and both mods keep working.
-
-For details you can check my discussion with its author: https://steamcommunity.com/workshop/filedetails/discussion/3806668942/586188069723699438/
+[size=5][b]Settings worth attention[/b][/size]
+[list]
+[*] Pickups go to nearest chest - everything you pick goes to the global storage. I recommend switching it on and using it all the time. By default it's off because the option can be very confusing if the player is not aware of it, but playing with it is much more convenient.
+[*] Factory Input Chests - allows you to feed factory chests from global storage - just pick output you want and scroll down for the item you want. By default this is off, so the factory logic stays intact.
+[/list]
 
 [size=5][b]Good to know[/b][/size]
 [list]
 [*]Any feedback on bugs and improvements welcomed! Please let me know if something's wrong before leaving a negative review :)
 [*]No BepInEx. Does not change game files or your save – remove it any time by deleting [i]GraveyardKeeper2_Data\Managed\GK2GlobalStorage.dll[/i], the folder [i]GraveyardKeeper2_Data\Managed\GK2GlobalStorage[/i] and [i]Languages\gk2globalstorage[/i].
 [*]Do not combine with other mods that share storage between areas.
-[*]Factory: workstations only use what the conveyor belts bring, as in the game. Garden Storage and Alcohol Storage feed the belts, so they are not used as chests; Conveyor Chests are.
+[*]Factory: workstations only use what the conveyor belts bring, as in the game. All factory chests (Conveyor Chests, Stockpiles, Garden and Alcohol Storage) count like any other chest.
 [*]Also on the Steam Workshop with automatic updates.
 [/list]
 
-Tested on game version 1.009.1.
+Tested on game version 1.010.
 
 Open source: [url=https://github.com/MaciejWanat/gk2-global-storage]GitHub[/url] · Uses Harmony (MIT).
 ```

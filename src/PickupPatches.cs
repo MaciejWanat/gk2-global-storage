@@ -9,7 +9,8 @@ namespace GK2GlobalStorage
     // Optional: items you pick up from the ground (harvest, chopping, mining, loot, your workbench craft
     // results, which the game drops for you to collect) go to the nearest chest with room in the area
     // (zone) you are standing in. Whatever does not fit, or everything when there is no such chest, goes
-    // to the bag as usual. Manual moves between bag and chests are not affected.
+    // to the bag as usual. Manual moves between bag and chests are not affected. In the factory only with
+    // PickupsInFactory: picked-up items would land in the chests that feed the belts.
     internal static class PickupPatches
     {
         private static FieldInfo dropCollectedEvent;
@@ -48,7 +49,7 @@ namespace GK2GlobalStorage
                 }
                 WorldZoneData zone = __instance.CurrentWorldZoneData;
                 PlayerController player = MainGame.PlayerController;
-                if (zone == null || player == null)
+                if (!ChestsTakePickups(zone) || player == null)
                 {
                     return true;
                 }
@@ -96,6 +97,18 @@ namespace GK2GlobalStorage
                 Plugin.ReportOnce("Pickup to chest", ex);
                 return true;
             }
+        }
+
+        // Whether pickups go to the chests of this zone: not in the factory's belt hall and storage room unless
+        // PickupsInFactory is on.
+        internal static bool ChestsTakePickups(WorldZoneData zone)
+        {
+            if (zone == null)
+            {
+                return false;
+            }
+            return Config.PickupsInFactory
+                || (zone.id != LazyConsts.CONVEYOR_WORLD_ZONE_ID && zone.id != LazyConsts.CONVEYOR_STORAGE_WORLD_ZONE_ID);
         }
 
         private static bool IsPinned(PlayerData player, Item item)
