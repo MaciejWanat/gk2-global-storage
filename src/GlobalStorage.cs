@@ -7,7 +7,7 @@ using UnityEngine;
 namespace GK2GlobalStorage
 {
     // Every storage container of every zone in the save, i.e. what the game's own per-zone
-    // MultiInventory(WorldZoneData) would collect, but across all zones and scenes.
+    // MultiInventory(WorldZoneData) would collect plus the factory chests it leaves out, across all zones and scenes.
     // Items are never moved; the inventories are just appended to the lists the game already builds.
     internal static class GlobalStorage
     {
@@ -191,7 +191,7 @@ namespace GK2GlobalStorage
                             if (inventory != null && seen.Add(inventory))
                             {
                                 result.Add(inventory);
-                                owners.Add(wgoData);
+                                owners.Add(Holder(worldData, wgoData));
                                 count++;
                             }
                         }
@@ -210,11 +210,19 @@ namespace GK2GlobalStorage
             }
         }
 
+        // Some objects show another one's inventory: the cargo lift tops in the yard show the factory Stockpiles'.
+        // The pool lists such an inventory once, with the object that holds it as its owner.
+        private static WgoData Holder(WorldData worldData, WgoData wgoData)
+        {
+            WGODef def = wgoData.Definition;
+            return def.hasRefToOtherWgoInventory ? worldData.GetWgoData(def.refToOtherWgoInventory) ?? wgoData : wgoData;
+        }
+
         // The chest's inventory if this object is a storage container that counts (null otherwise).
         internal static Inventory Storage(WgoData wgoData)
         {
             WGODef def = wgoData?.Definition;
-            if (def == null || def.inventorySize == 0 || !def.OpenInMultiInventory)
+            if (def == null || def.inventorySize == 0 || !(def.OpenInMultiInventory || IsFactoryChest(def)))
             {
                 return null;
             }
@@ -228,6 +236,22 @@ namespace GK2GlobalStorage
                 return null;
             }
             return inventory;
+        }
+
+        // Chests of the factory belts: Conveyor Chests, Stockpiles, Garden Storage and Alcohol Storage. The game marks
+        // Garden and Alcohol Storage as not storage (open_in_multi_inventory = false), so its own area lists skip
+        // them; the pool takes them like any other chest.
+        internal static bool IsFactoryChest(WGODef def)
+        {
+            switch (def.conveyorType)
+            {
+                case ConveyorElementType.Chest:
+                case ConveyorElementType.ChestOut:
+                case ConveyorElementType.Pallet:
+                    return true;
+                default:
+                    return false;
+            }
         }
 
         internal sealed class RefComparer : IEqualityComparer<Inventory>

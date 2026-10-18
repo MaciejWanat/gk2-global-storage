@@ -98,6 +98,16 @@ namespace GK2GlobalStorage
                 Debug.LogWarning("[GK2GlobalStorage] Cannot patch trading: " + ex.Message);
             }
 
+            // Not counted: vendor windows work without it.
+            try
+            {
+                VendorOrder.Apply(harmony);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning("[GK2GlobalStorage] Cannot patch vendor item order: " + ex.Message);
+            }
+
             try
             {
                 ok += ZombiePatches.Apply(harmony);

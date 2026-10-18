@@ -33,14 +33,20 @@ which hands it the Harmony already loaded.
 | `UIMultiInventoryWindowData` ctor | item picker windows: other areas' chests appended as their own sections only with `Pickers` on (default); chests holding an item the picker accepts come first (after the bag); with `PickersOnlyUsable` (default) only usable items and the chests holding them are shown (game's "not shown" item condition + empty slots hidden in an `InventoryWidget.Redraw` postfix); otherwise exactly as in the game |
 | Transpiler on quest/dialog classes | bag item has/count/remove calls go through `QuestRedirect` (bag first, then chests) |
 | `Trading` | chests with sellable items listed under the bag; moved items are taken from the chest and return there on cancel |
+| `UIVendorWindow.TryUpdateHappinessStatusIcons` (with `Trading`, i.e. whenever vendor windows show your chests) | on your side, after every redraw, each section's cells are reordered in their grid: items the vendor buys (the section's own greying condition) first, among them those that give gratitude (the game's `Vendor.HasHappinessForItem`, as for the icon; `townVendor` vendors = all but the Bishop and the Woodcarver), then greyed-out items, then empty cells; chests holding a sellable item with gratitude are listed first; inventories are not touched (`src/VendorOrder.cs`) |
 | `WorldZoneData.CanDeliveryOrderBeTakenOnExecution` + `ZombieWgoData.CaretakerTryMoveToNearestInventoryWithRequiredItemCountToPickUp` (option `ZombieWorkers`) | when the area lacks a zombie delivery, the missing amount is moved in from other areas' chests; carriers walk to the nearest chest holding any of the item |
 | `ConveyorChestComponent` / `ConveyorChestOutComponent` / `ConveyorPalletComponent` `.CanGiveItem` (option `Factory`, off by default) | a belt input chest (Conveyor Chest, Garden/Alcohol Storage) out of the item set on the asking cell's slot, or an empty Stockpile of one item, first gets one stack of it from the pool; only when the cell is empty (a stopped belt pulls nothing), never for a slot without an item; chests that feed a belt are never sources (`src/FactoryPatches.cs`) |
-| `PlayerData.CollectDrop` (optional, off by default) | picked-up items go to the nearest chest with room in the current zone; bag if none, for quest items and for items on the quick bar |
+| `UIConveyorChestWindow` / `UIConveyorVegetablesChestWindow` / `UIConveyorWineChestWindow` `.SetChestItemSettingMode` (option `Factory`) | while you choose a belt slot's item, a section "Global Storage" under the chest lists every item the refill can bring, i.e. of the other chests except those that feed a belt (one cell each, total count, only what the chest's filters let in); the game switches its cells like the chest's, so clicking one sets the slot; taken out again before the cells go back to moving items (`src/FactorySlotPicker.cs`) |
+| `PlayerData.CollectDrop` (optional, off by default) | picked-up items go to the nearest chest with room in the current zone; bag if none, for quest items, for items on the quick bar and in the factory (zones `conveyor`, `conveyor_storage`) unless `PickupsInFactory` is on |
 | `ChestInteractionHandler.Interact` + `MultiInventory(WorldZoneData, WgoData, bool)` ctor (option `ChestWindows`, off by default) | opening a chest also lists other areas' chests, view only like the game shows the area's chests |
 | `LanguageModLoader.AppendLanguages` | hides the loader pack |
 
 Global chests = every container with `OpenInMultiInventory` in every `WorldZoneData` of every
-`GameSceneData` in the save (the same rule the game uses per zone).
+`GameSceneData` in the save (the same rule the game uses per zone), plus the factory's belt chests
+(`conveyorType` Chest, ChestOut or Pallet): Garden Storage and Alcohol Storage have
+`open_in_multi_inventory = false` in the game data, so the game's own area lists skip them. An inventory
+shown by two objects (the cargo lift tops in the yard show the factory Stockpiles') is listed once, owned by
+the object that holds it, so a Stockpile that feeds a belt is never a refill source through its lift.
 
 Settings page: Shift+F2, or L3+R3 on a gamepad / Steam Deck (D-pad + A/B inside). The gamepad is read
 straight from the game's Rewired player (`src/Pad.cs`), because the game's own input layer is paused while
@@ -104,9 +110,9 @@ dotnet test tests\GK2GlobalStorage.Tests
 (with `-p:GameDir=...` as above for another install location). The tests run outside the game, on .NET 8, against the
 installed game's DLLs: some game types have default interface methods, which .NET Framework cannot load. They
 cover the config file, the chest pool, the patched game methods (building lists, workbenches, zombie and automatic
-crafters, factory workstations, chest windows), quest redirection, picker order, zombie deliveries and factory input
-chest refills, and they apply the mod's real Harmony patches, so a game update that removes or renames a patched
-method fails a test.
+crafters, factory workstations, chest windows), quest redirection, picker order, zombie deliveries, factory input
+chest refills and slot item choice, and the areas whose chests take pickups, and they apply the mod's real Harmony
+patches, so a game update that removes or renames a patched method fails a test.
 `tests\GK2GlobalStorage.Tests\FakeGame.cs` builds a loaded save without the engine (how and why is described there).
 
 Harmony 2.4.2 (MIT) comes from NuGet.

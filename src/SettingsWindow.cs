@@ -18,6 +18,8 @@ namespace GK2GlobalStorage
             public Action<bool> set;
             // 0 = top level, 1 = under "Global storage", 2 = under "Show items from other chests", 3 = under "Item pickers".
             public int level;
+            // A row under another option than those (indented by level): editable while that option and the mod are on.
+            public Func<bool> under;
             public bool dev;
         }
 
@@ -52,15 +54,17 @@ namespace GK2GlobalStorage
                 get = () => Config.ZombieWorkers, set = v => Config.ZombieWorkers = v },
             new Row { name = "Automatic crafters", hint = "Crafters with no worker also take from all your chests; can empty them unnoticed", level = 1,
                 get = () => Config.AutoCrafters, set = v => Config.AutoCrafters = v },
-            new Row { name = "Factory input chests", hint = "Conveyor chests with a slot item set and stockpiles refill from all your chests", level = 1,
+            new Row { name = "Factory input chests", hint = "Any item from Global Storage on a belt: click a chest output, scroll down, pick it", level = 1,
                 get = () => Config.Factory, set = v => Config.Factory = v },
             new Row { name = "Fuel containers", hint = "Fuel slots of furnaces and similar objects count as chests", level = 1,
                 get = () => Config.FuelContainers, set = v => { Config.FuelContainers = v; GlobalStorage.Invalidate(); } },
             new Row { name = "Pickups go to nearest chest", hint = "Items you pick up go to the nearest chest with room in this area, otherwise to your bag", level = 1,
                 get = () => Config.PickupsToChest, set = v => Config.PickupsToChest = v },
+            new Row { name = "Also in the factory", hint = "Off: in the factory pickups go to your bag, so belt chests stay clean", level = 2, under = () => Config.PickupsToChest,
+                get = () => Config.PickupsInFactory, set = v => Config.PickupsInFactory = v },
             new Row { name = "Show items from other chests", hint = "Chests from other areas appear below your inventory", level = 1,
                 get = () => Config.ShowOtherChests, set = v => Config.ShowOtherChests = v },
-            new Row { name = "Vendor windows", hint = "Sell straight from your chests", level = 2,
+            new Row { name = "Vendor windows", hint = "Sell straight from your chests; what the vendor buys comes first", level = 2,
                 get = () => Config.Trading, set = v => Config.Trading = v },
             new Row { name = "Item pickers", hint = "Choosing seeds, organs, grave decorations and similar", level = 2,
                 get = () => Config.Pickers, set = v => Config.Pickers = v },
@@ -148,6 +152,10 @@ namespace GK2GlobalStorage
 
         private static bool IsEditable(Row r)
         {
+            if (r.under != null)
+            {
+                return Config.Enabled && r.under();
+            }
             switch (r.level)
             {
                 case 0: return true;

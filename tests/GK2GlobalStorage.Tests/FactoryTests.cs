@@ -156,6 +156,31 @@ namespace GK2GlobalStorage.Tests
         }
 
         [Test]
+        public void StockpileThatFeedsABeltIsNotASourceThroughItsCargoLift()
+        {
+            // The cargo lift top in the yard shows the Stockpile's inventory and comes first in the pool; the
+            // Stockpile still counts as a chest that feeds a belt.
+            farChest.Inventory.RemoveItemById("wood", 250);
+            ConveyorWgoData stockpile = PlaceConveyor(factory, "wood_stockpile", ("wood", 90));
+            Feed(stockpile, PlaceConveyor(factory, "conveyor_cell"));
+            WGODef top = ObjectDef("wood_stockpile_TOP", inventorySize: 9);
+            top.hasRefToOtherWgoInventory = true;
+            top.refToOtherWgoInventory = "wood_stockpile";
+            // The yard comes before the factory, as in the game.
+            GameSceneData main = World.gameSceneDataList[0];
+            WorldZoneData yard = Zone(main, "yard");
+            main.worldZones.Remove(yard);
+            main.worldZones.Insert(0, yard);
+            Place(yard, "wood_stockpile_TOP");
+            GlobalStorage.Invalidate();
+            Feed(input, cell, "wood");
+
+            Assert.That(GlobalStorage.All()[0], Is.SameAs(stockpile.Inventory));
+            Assert.That(CanGive(input, cell), Is.False);
+            Assert.That(Count(stockpile, "wood"), Is.EqualTo(90));
+        }
+
+        [Test]
         public void StockpileGetsItsOnlyItem()
         {
             ConveyorWgoData stockpile = PlaceConveyor(factory, "wood_stockpile");

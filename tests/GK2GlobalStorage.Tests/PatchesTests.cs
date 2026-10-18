@@ -41,6 +41,19 @@ namespace GK2GlobalStorage.Tests
         }
 
         [Test]
+        public void BuildingElsewhereUsesTheFactoryGardenStorage()
+        {
+            ObjectDef("garden_bags_storage_1", storage: false).conveyorType = ConveyorElementType.ChestOut;
+            WgoData garden = Place(Zone(Scene("main"), "conveyor"), "garden_bags_storage_1", items: ("wood", 4));
+            EnterZone(yard);
+
+            MultiInventory list = new MultiInventory(Player, true);
+
+            Assert.That(list.inventoryList, Does.Contain(garden.Inventory));
+            Assert.That(list.GetTotalCount("wood"), Is.EqualTo(4));
+        }
+
+        [Test]
         public void BuildingListStaysLocalWithBuildingOff()
         {
             EnterZone(yard);

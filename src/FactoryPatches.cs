@@ -12,7 +12,7 @@ namespace GK2GlobalStorage
     // the item set on that cell's slot, a Stockpile its first stack. With the option on, a chest that has run out of
     // that item first gets a stack of it from the chests in every zone, so the belt keeps going. Slots without an
     // item stay as in the game. A chest that feeds a belt is never a source, so two input chests set to the same item
-    // do not pass it back and forth.
+    // do not pass it back and forth. A slot can be set to any item of any chest (FactorySlotPicker).
     internal static class FactoryPatches
     {
         private const int RetryMs = 3000;
@@ -38,7 +38,8 @@ namespace GK2GlobalStorage
             {
                 harmony.Patch(target, prefix: new HarmonyMethod(typeof(FactoryPatches), nameof(CanGivePrefix)));
             }
-            return 1;
+            // Refills work without it, for slots set to an item the chest holds.
+            return FactorySlotPicker.Apply(harmony) ? 1 : 0;
         }
 
         // Before the game checks what the chest can give: refill it if it has run out.
@@ -137,6 +138,13 @@ namespace GK2GlobalStorage
             return null;
         }
 
+        // Whether a chest of the pool (inventory, owner: same index of GlobalStorage.All() and Owners()) can refill
+        // the target: not the target itself, and not a chest that feeds a belt.
+        internal static bool IsSource(Inventory inventory, WgoData owner, Inventory target)
+        {
+            return !ReferenceEquals(inventory, target) && !FeedsBelt(owner);
+        }
+
         // Input chests that give to a belt cell.
         internal static bool FeedsBelt(WgoData wgoData)
         {
@@ -170,7 +178,7 @@ namespace GK2GlobalStorage
             int available = 0;
             for (int i = 0; i < pool.Count && available < want; i++)
             {
-                if (ReferenceEquals(pool[i], target) || FeedsBelt(owners[i]))
+                if (!IsSource(pool[i], owners[i], target))
                 {
                     continue;
                 }

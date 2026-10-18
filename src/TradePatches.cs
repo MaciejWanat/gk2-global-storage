@@ -11,7 +11,8 @@ namespace GK2GlobalStorage
     // Vendor window: under your bag, every chest that holds something the vendor buys is listed as its own
     // section (the bag part stays exactly as in the game). Moving an item from a chest into the deal takes
     // it out of that chest and remembers it; taking it back, cancelling or closing the window returns it to
-    // that chest instead of your bag.
+    // that chest instead of your bag. Chests holding a sellable item that gives the vendor's gratitude come first
+    // (see VendorOrder).
     internal static class TradePatches
     {
         private sealed class Origin
@@ -75,9 +76,11 @@ namespace GK2GlobalStorage
                 state.origins.Clear();
                 state.listed.Clear();
                 Func<Item, bool> sellable = (Func<Item, bool>)Delegate.CreateDelegate(typeof(Func<Item, bool>), __instance, playerItemsAvailable);
+                Func<Item, bool> gives = VendorOrder.Gives(vendorWindowData);
+                List<(List<InventoryWidgetDataBase> widgets, bool gratitude)> sections = new List<(List<InventoryWidgetDataBase>, bool)>();
                 foreach (Inventory chest in GlobalStorage.All())
                 {
-                    if (!HasSellable(chest, sellable))
+                    if (!Holds(chest, sellable))
                     {
                         continue;
                     }
@@ -91,8 +94,12 @@ namespace GK2GlobalStorage
                     {
                         widget.DrawEmptyCellsAsDisabledWhenUnavailable = true;
                     }
-                    vendorWindowData.PlayerMultiInventoryWidgetData.AddRange(widgets);
+                    sections.Add((widgets, gives != null && Holds(chest, item => sellable(item) && gives(item))));
                     state.listed.Add(from);
+                }
+                foreach ((List<InventoryWidgetDataBase> widgets, bool _) in VendorOrder.ByRank(sections, s => s.gratitude ? 1 : 0))
+                {
+                    vendorWindowData.PlayerMultiInventoryWidgetData.AddRange(widgets);
                 }
                 if (state.listed.Count > 0)
                 {
@@ -105,11 +112,11 @@ namespace GK2GlobalStorage
             }
         }
 
-        private static bool HasSellable(Inventory chest, Func<Item, bool> sellable)
+        private static bool Holds(Inventory chest, Func<Item, bool> condition)
         {
             foreach (Item item in chest.Data.Inventory)
             {
-                if (item != null && !item.IsEmpty && sellable(item))
+                if (item != null && !item.IsEmpty && condition(item))
                 {
                     return true;
                 }

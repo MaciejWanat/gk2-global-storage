@@ -144,6 +144,11 @@ namespace GK2GlobalStorage.Tests
             Set(wgo, "craftInventory", new Inventory(InventoryItem, 10));
             Set(wgo, "worldZoneData", zone);
             World.Cache.wgoDataByUidCache[wgo.UniqueId.Guid] = wgo;
+            if (!World.Cache.wgoDataByIdsCache.TryGetValue(defId, out List<WgoData> sameId))
+            {
+                World.Cache.wgoDataByIdsCache[defId] = sameId = new List<WgoData>();
+            }
+            sameId.Add(wgo);
             if (zone != null)
             {
                 zone.wgoDataList.Add(wgo.UniqueId);

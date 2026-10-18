@@ -1,4 +1,4 @@
-Global Storage for Graveyard Keeper 2  (v1.0.3)
+Global Storage for Graveyard Keeper 2  (v1.0.4)
 ================================================
 
 Items in ANY of your storage chests, in ANY zone and on ANY level, can be used for:
@@ -7,10 +7,12 @@ Items in ANY of your storage chests, in ANY zone and on ANY level, can be used f
   - alchemy, garden beds, prayers, resurrection, tooltips
   - quest and dialog requirements (checked against, and taken from, bag + chests)
   - trading: chests holding what the vendor buys are listed in the vendor window
+    (what the vendor buys comes first, items that give gratitude at the front)
 
 Items are taken from the chest where they are, wherever it is: craft in area X
 with wood that sits in a chest in area Y, and the wood disappears from that chest.
 Your bag and the chests of the zone you are in are used first.
+Factory chests count too: Conveyor Chests, Stockpiles, Garden and Alcohol Storage.
 No BepInEx. Does not modify game files and does not write anything extra to your save.
 
 INSTALL
@@ -43,9 +45,9 @@ language.json, which loads GK2GlobalStorage.dll; that small loader loads Harmony
 then the mod itself (GK2GlobalStorage.Core.dll). The pack is hidden from the
 language list.
 
-Check it works: the main menu shows "Global Storage v1.0.3 / status: on" in the
+Check it works: the main menu shows "Global Storage v1.0.4 / status: on" in the
 top right corner. Player.log in %USERPROFILE%\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper 2
-should contain "[GK2GlobalStorage] Global Storage 1.0.3 (game folder) loaded (10/10 patches)".
+should contain "[GK2GlobalStorage] Global Storage 1.0.4 (game folder) loaded (10/10 patches)".
 
 SETTINGS
 --------
@@ -66,22 +68,27 @@ Changes apply immediately and are saved to
                   chests in other areas
   AutoCrafters    crafters with no worker also take from all     (default off)
                   your chests; can empty them unnoticed
-  Factory         a factory input chest (Conveyor Chest, Garden   (default off)
-                  or Alcohol Storage) that runs out of the item
-                  set on one of its belt slots gets a stack of it
-                  from your other chests; a Stockpile likewise for
-                  its item. The belts still carry everything. To
-                  set a slot's item, put one into the chest, click
-                  the slot, then click the item
+  Factory         any item from Global Storage on a belt: in      (default off)
+                  a Conveyor Chest, Garden or Alcohol Storage,
+                  click the output (belt slot), scroll down to
+                  the "Global Storage" section and click the
+                  item. When the chest runs out of it, a stack
+                  comes from your other chests; a Stockpile
+                  likewise for its item. Chests that feed a
+                  belt never give to each other
   FuelContainers  fuel slots of furnaces and similar objects     (default off)
                   count as chests
   PickupsToChest  items you pick up go to the nearest chest      (default off)
                   with room in this area, otherwise to your bag;
                   quest items and items on your quick bar always
                   go to the bag
+    PickupsInFactory  also in the factory; off, pickups there     (default off)
+                  go to your bag, so belt chests stay clean
   ShowOtherChests chests from other areas appear below your       (default on)
                   inventory
     Trading       vendor windows: sell straight from your chests (default on)
+                  (what the vendor buys comes first there, items
+                  that give gratitude at the front)
     Pickers       choosing seeds, organs, grave decorations and  (default on)
                   similar; chests with something usable first
       PickersOnlyUsable  pickers show only usable items and   (default on)
