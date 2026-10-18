@@ -67,8 +67,10 @@ title, description and visibility were kept.
    dotnet build GK2GlobalStorage.csproj -c Release -t:Workshop -p:ChangeNoteFile=dist\changenote.bbcode
    steamcmd +login <steam_user> +workshop_build_item "<repo>\dist\workshop_item.vdf" +quit
    ```
-   The change note is a bulleted list, one change per item, in a file (`dist\` is not committed):
+   The change note starts with the update name on its own line, then a bulleted list, one change per item, in a
+   file (`dist\` is not committed):
    ```
+   Update 1.0.4
    [list]
    [*]Zombie workers: ...
    [*]...
