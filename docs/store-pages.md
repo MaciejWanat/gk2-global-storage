@@ -55,8 +55,8 @@ Use items from [b]any chest, in any area and on any level[/b] – for building, 
 
 [size=5][b]Settings worth attention[/b][/size]
 [list]
-[*] Pickups go to nearest chest - everything you pick goes to the global storage. I recommend switching it on and using it all the time. By default it's off because the option can be very confusing if the player is not aware of it, but playing with it is much more convenient.
-[*] Factory Input Chests - allows you to feed factory chests from global storage - just pick output you want and scroll down for the item you want. By default this is off, so the factory logic stays intact.
+[*] [b]Pickups go to nearest chest[/b] - everything you pick goes to the global storage. I recommend switching it on and using it all the time. By default it's off because the option can be very confusing if the player is not aware of it, but playing with it is much more convenient.
+[*] [b]Factory Input Chests[/b] - allows you to feed factory chests from global storage - just pick output you want and scroll down for the item you want. By default this is off, so the factory logic stays intact.
 [/list]
 
 [size=5][b]Good to know[/b][/size]
