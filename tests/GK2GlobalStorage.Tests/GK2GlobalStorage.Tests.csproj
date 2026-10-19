@@ -31,6 +31,9 @@
     <Reference Include="Assembly-CSharp"><HintPath>$(Managed)\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="LazyBearTechnology"><HintPath>$(Managed)\LazyBearTechnology.dll</HintPath><Private>false</Private></Reference>
     <Reference Include="UnityEngine.CoreModule"><HintPath>$(Managed)\UnityEngine.CoreModule.dll</HintPath><Private>false</Private></Reference>
+    <!-- Compile time only: it is not copied next to the tests (Mono* below), so code using it cannot run there, like
+         mod code naming something the installed game lacks (GuardTests). -->
+    <Reference Include="Mono.Security"><HintPath>$(Managed)\Mono.Security.dll</HintPath><Private>false</Private></Reference>
   </ItemGroup>
 
   <!-- The game's assemblies next to the tests, so types load the way they do in the game. Framework assemblies

@@ -125,7 +125,7 @@ namespace GK2GlobalStorage.Tests
         {
             MethodInfo icons = AccessTools.DeclaredMethod(typeof(UIVendorWindow), "TryUpdateHappinessStatusIcons");
 
-            Assert.That(Harmony.GetPatchInfo(icons)?.Postfixes.Select(p => p.owner), Does.Contain(Patches.HarmonyId));
+            Assert.That(Harmony.GetPatchInfo(icons)?.Postfixes.Select(p => p.owner), Does.Contain(Hooks.HarmonyId(Hook.VendorOrder)));
         }
 
         // A vendor that gives gratitude (townVendor: all but the Bishop and the Woodcarver) on its first tier,

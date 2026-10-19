@@ -20,7 +20,7 @@ namespace GK2GlobalStorage
         // Chest + item that could not be refilled recently; belts ask every step, so the key allocates nothing.
         private static readonly Dictionary<(Guid chest, string item), int> notAvailable = new Dictionary<(Guid chest, string item), int>();
 
-        public static int Apply(Harmony harmony)
+        public static bool Apply(Harmony harmony)
         {
             Type[] receiver = { typeof(ConveyorComponent) };
             MethodInfo[] targets =
@@ -32,14 +32,13 @@ namespace GK2GlobalStorage
             if (Array.IndexOf(targets, null) >= 0)
             {
                 Debug.LogWarning("[GK2GlobalStorage] Factory patch: game methods not found (game update?)");
-                return 0;
+                return false;
             }
             foreach (MethodInfo target in targets)
             {
                 harmony.Patch(target, prefix: new HarmonyMethod(typeof(FactoryPatches), nameof(CanGivePrefix)));
             }
-            // Refills work without it, for slots set to an item the chest holds.
-            return FactorySlotPicker.Apply(harmony) ? 1 : 0;
+            return true;
         }
 
         // Before the game checks what the chest can give: refill it if it has run out.

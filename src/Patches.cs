@@ -12,6 +12,7 @@ namespace GK2GlobalStorage
     // after HarmonyLoader has made 0Harmony resolvable.
     internal static class Patches
     {
+        // Each hook patches as this + "." + its name (Hooks.HarmonyId).
         public const string HarmonyId = "gk2globalstorage";
 
         private const string PackPrefix = "gk2globalstorage";
@@ -37,127 +38,163 @@ namespace GK2GlobalStorage
         [ThreadStatic]
         private static int finishCheckDepth;
 
+        // Applies every hook (see Hooks) and returns how many are in. If only the language list hook is in (it just
+        // hides the loader pack), Plugin counts the mod as off (Hooks.ModOff).
         [MethodImpl(MethodImplOptions.NoInlining)]
         public static int Apply()
         {
-            Harmony harmony = new Harmony(HarmonyId);
-            int ok = 0;
+            Install(Hook.Building, Own(nameof(PlayerMultiInventoryPostfix)), h =>
+                Patch(h, "MultiInventory(PlayerData, bool)",
+                    AccessTools.Constructor(typeof(MultiInventory), new[] { typeof(PlayerData), typeof(bool) }),
+                    postfix: nameof(PlayerMultiInventoryPostfix)));
 
-            ok += Patch(harmony, "MultiInventory(PlayerData, bool)",
-                AccessTools.Constructor(typeof(MultiInventory), new[] { typeof(PlayerData), typeof(bool) }),
-                postfix: nameof(PlayerMultiInventoryPostfix));
+            Install(Hook.Workbenches, Own(nameof(CraftableMultiInventoryPostfix)), h =>
+                Patch(h, "WgoData.GetCraftableMultiInventory",
+                    AccessTools.Method(typeof(WgoData), nameof(WgoData.GetCraftableMultiInventory)),
+                    postfix: nameof(CraftableMultiInventoryPostfix)));
 
-            ok += Patch(harmony, "WgoData.GetCraftableMultiInventory",
-                AccessTools.Method(typeof(WgoData), nameof(WgoData.GetCraftableMultiInventory)),
-                postfix: nameof(CraftableMultiInventoryPostfix));
+            // Without it only the zombie result room check sees every chest.
+            Install(Hook.CraftFinishCheck, Own(nameof(FinishCheckPrefix), nameof(FinishCheckFinalizer)), h =>
+                Patch(h, "CraftElementBase.CanFinishCraft",
+                    AccessTools.Method(typeof(CraftElementBase), nameof(CraftElementBase.CanFinishCraft)),
+                    prefix: nameof(FinishCheckPrefix), finalizer: nameof(FinishCheckFinalizer)));
 
-            // Not counted, like the chest window patches: without it only the zombie result room check sees every chest.
-            Patch(harmony, "CraftElementBase.CanFinishCraft",
-                AccessTools.Method(typeof(CraftElementBase), nameof(CraftElementBase.CanFinishCraft)),
-                prefix: nameof(FinishCheckPrefix), finalizer: nameof(FinishCheckFinalizer));
+            Install(Hook.Pickers, Own(nameof(PickerPrefix), nameof(PickerPostfix), nameof(PickerFinalizer)), h =>
+                Patch(h, "UIMultiInventoryWindowData..ctor",
+                    FirstConstructor(typeof(UIMultiInventoryWindowData)),
+                    prefix: nameof(PickerPrefix), postfix: nameof(PickerPostfix), finalizer: nameof(PickerFinalizer)));
 
-            ok += Patch(harmony, "UIMultiInventoryWindowData..ctor",
-                FirstConstructor(typeof(UIMultiInventoryWindowData)),
-                prefix: nameof(PickerPrefix), postfix: nameof(PickerPostfix), finalizer: nameof(PickerFinalizer));
-
-            ok += Patch(harmony, "InventoryWidget.Redraw",
-                AccessTools.DeclaredMethod(typeof(InventoryWidget), nameof(InventoryWidget.Redraw)),
-                postfix: nameof(InventoryRedrawPostfix));
+            Install(Hook.PickerCells, Own(nameof(InventoryRedrawPostfix)), h =>
+                Patch(h, "InventoryWidget.Redraw",
+                    AccessTools.DeclaredMethod(typeof(InventoryWidget), nameof(InventoryWidget.Redraw)),
+                    postfix: nameof(InventoryRedrawPostfix)));
 
             // Chest windows: the chest window itself is left alone (other mods change it). Instead, while a chest
             // is being opened, other areas' chests are appended to the area-chest list the game builds for that
             // window (see ChestWindowView).
-            Patch(harmony, "ChestInteractionHandler.Interact",
-                AccessTools.Method(typeof(ChestInteractionHandler), nameof(ChestInteractionHandler.Interact), new[] { typeof(PlayerController) }),
-                prefix: nameof(ChestOpenPrefix), finalizer: nameof(ChestOpenFinalizer));
-            Patch(harmony, "MultiInventory(WorldZoneData, WgoData, bool)",
-                AccessTools.Constructor(typeof(MultiInventory), new[] { typeof(WorldZoneData), typeof(WgoData), typeof(bool) }),
-                postfix: nameof(AreaChestsPostfix));
+            Install(Hook.ChestWindows, Own(nameof(ChestOpenPrefix), nameof(ChestOpenFinalizer), nameof(AreaChestsPostfix)), h =>
+                Patch(h, "ChestInteractionHandler.Interact",
+                    AccessTools.Method(typeof(ChestInteractionHandler), nameof(ChestInteractionHandler.Interact), new[] { typeof(PlayerController) }),
+                    prefix: nameof(ChestOpenPrefix), finalizer: nameof(ChestOpenFinalizer))
+                && Patch(h, "MultiInventory(WorldZoneData, WgoData, bool)",
+                    AccessTools.Constructor(typeof(MultiInventory), new[] { typeof(WorldZoneData), typeof(WgoData), typeof(bool) }),
+                    postfix: nameof(AreaChestsPostfix)));
 
-            ok += Patch(harmony, "LanguageModLoader.AppendLanguages",
-                AccessTools.Method(typeof(LanguageModLoader), nameof(LanguageModLoader.AppendLanguages)),
-                postfix: nameof(HideLoaderPack));
+            Install(Hook.LanguageList, Own(nameof(HideLoaderPack)), h =>
+                Patch(h, "LanguageModLoader.AppendLanguages",
+                    AccessTools.Method(typeof(LanguageModLoader), nameof(LanguageModLoader.AppendLanguages)),
+                    postfix: nameof(HideLoaderPack)));
 
-            try
-            {
-                int quest = QuestPatches.Apply(harmony, out int methods);
-                Debug.Log("[GK2GlobalStorage] Quest patch: " + methods + " method(s) redirected");
-                ok += quest;
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning("[GK2GlobalStorage] Cannot patch quests: " + ex.Message);
-            }
+            Install(Hook.Quests, () => Guard.Check(typeof(QuestPatches), typeof(QuestRedirect)), QuestPatches.Apply);
+            Install(Hook.Trading, () => Guard.Check(typeof(TradePatches)), TradePatches.Apply);
+            // Vendor windows work without it.
+            Install(Hook.VendorOrder, () => Guard.Check(typeof(VendorOrder)), VendorOrder.Apply);
+            Install(Hook.ZombieWorkers, () => Guard.Check(typeof(ZombiePatches)), ZombiePatches.Apply);
+            Install(Hook.Factory, () => Guard.Check(typeof(FactoryPatches)), FactoryPatches.Apply);
+            // Refills work without it, for slots set to an item the chest holds.
+            Install(Hook.FactorySlotPicker, () => Guard.Check(typeof(FactorySlotPicker)), FactorySlotPicker.Apply);
+            Install(Hook.Pickups, () => Guard.Check(typeof(PickupPatches)), PickupPatches.Apply);
 
-            try
-            {
-                ok += TradePatches.Apply(harmony);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning("[GK2GlobalStorage] Cannot patch trading: " + ex.Message);
-            }
-
-            // Not counted: vendor windows work without it.
-            try
-            {
-                VendorOrder.Apply(harmony);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning("[GK2GlobalStorage] Cannot patch vendor item order: " + ex.Message);
-            }
-
-            try
-            {
-                ok += ZombiePatches.Apply(harmony);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning("[GK2GlobalStorage] Cannot patch zombie carriers: " + ex.Message);
-            }
-
-            try
-            {
-                ok += FactoryPatches.Apply(harmony);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning("[GK2GlobalStorage] Cannot patch factory chests: " + ex.Message);
-            }
-
-            try
-            {
-                ok += PickupPatches.Apply(harmony);
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning("[GK2GlobalStorage] Cannot patch pickups: " + ex.Message);
-            }
-
-            return ok;
+            Debug.Log("[GK2GlobalStorage] Compile check: " + Guard.Compiled + " methods in "
+                + (Guard.Ticks * 1000 / System.Diagnostics.Stopwatch.Frequency) + " ms");
+            return Hooks.LoadedCount;
         }
 
-        private static int Patch(Harmony harmony, string label, MethodBase target, string prefix = null, string postfix = null, string finalizer = null)
+        // The mod off as a whole after Apply failed halfway: every hook taken out but the one hiding the loader pack,
+        // so a mod that is off does not leave its loader in the language list.
+        internal static void RemoveFeatures()
+        {
+            foreach (Hook hook in Hooks.All)
+            {
+                if (hook != Hook.LanguageList)
+                {
+                    string id = Hooks.HarmonyId(hook);
+                    new Harmony(id).UnpatchAll(id);
+                }
+            }
+        }
+
+        // Checks a hook, applies it and records the outcome (Hooks); a hook left out is logged with the reason.
+        internal static void Install(Hook hook, Func<string> check, Func<Harmony, bool> apply)
+        {
+            string failure = TryInstall(Hooks.HarmonyId(hook), check, apply);
+            Hooks.Record(hook, failure);
+            if (failure != null)
+            {
+                Debug.LogWarning("[GK2GlobalStorage] Not loaded: " + Hooks.Name(hook) + ". " + failure);
+            }
+        }
+
+        // A hook goes in only when its code can run on this game version (check, see Guard), the game methods it
+        // patches exist and Harmony takes every patch; whatever of it went in before a failure is taken out again
+        // (its own Harmony id). Null when it is in, else why not.
+        internal static string TryInstall(string harmonyId, Func<string> check, Func<Harmony, bool> apply)
+        {
+            string cannotRun;
+            try
+            {
+                cannotRun = check();
+            }
+            catch (Exception ex)
+            {
+                // A fault of the check itself: patch as before it existed.
+                Debug.LogWarning("[GK2GlobalStorage] Compile check failed for " + harmonyId + ": " + ex);
+                cannotRun = null;
+            }
+            if (cannotRun != null)
+            {
+                return "Its code cannot run on this game version: " + cannotRun;
+            }
+            Harmony harmony = new Harmony(harmonyId);
+            string failure;
+            try
+            {
+                failure = apply(harmony) ? null : "A game method it needs was not found (game update?), see above.";
+            }
+            catch (Exception ex)
+            {
+                failure = "Patching failed: " + ex.Message;
+            }
+            if (failure != null)
+            {
+                try
+                {
+                    harmony.UnpatchAll(harmonyId);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogWarning("[GK2GlobalStorage] Cannot take out " + harmonyId + ": " + ex.Message);
+                }
+            }
+            return failure;
+        }
+
+        // Check of this class's patch methods with these names.
+        private static Func<string> Own(params string[] methods)
+        {
+            return () =>
+            {
+                List<MethodBase> roots = new List<MethodBase>();
+                foreach (string name in methods)
+                {
+                    roots.Add(AccessTools.Method(typeof(Patches), name) ?? throw new MissingMethodException(nameof(Patches), name));
+                }
+                return Guard.Check(roots);
+            };
+        }
+
+        private static bool Patch(Harmony harmony, string label, MethodBase target, string prefix = null, string postfix = null, string finalizer = null)
         {
             if (target == null)
             {
                 Debug.LogWarning("[GK2GlobalStorage] Patch target not found (game update?): " + label);
-                return 0;
+                return false;
             }
-            try
-            {
-                harmony.Patch(target,
-                    prefix: prefix == null ? null : new HarmonyMethod(typeof(Patches), prefix),
-                    postfix: postfix == null ? null : new HarmonyMethod(typeof(Patches), postfix),
-                    finalizer: finalizer == null ? null : new HarmonyMethod(typeof(Patches), finalizer));
-                return 1;
-            }
-            catch (Exception ex)
-            {
-                Debug.LogWarning("[GK2GlobalStorage] Cannot patch " + label + ": " + ex.Message);
-                return 0;
-            }
+            harmony.Patch(target,
+                prefix: prefix == null ? null : new HarmonyMethod(typeof(Patches), prefix),
+                postfix: postfix == null ? null : new HarmonyMethod(typeof(Patches), postfix),
+                finalizer: finalizer == null ? null : new HarmonyMethod(typeof(Patches), finalizer));
+            return true;
         }
 
         private static ConstructorInfo FirstConstructor(Type type)
