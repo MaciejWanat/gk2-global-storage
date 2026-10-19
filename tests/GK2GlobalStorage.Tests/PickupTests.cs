@@ -34,5 +34,21 @@ namespace GK2GlobalStorage.Tests
         {
             Assert.That(PickupPatches.ChestsTakePickups(null), Is.False);
         }
+
+        // Quest items always go to the bag. The flag is read by reflection: some game builds players run lack it.
+        [Test]
+        public void QuestItemsAreRecognised()
+        {
+            ItemDef note = Item("quest_note");
+            note.isQuestItem = true;
+
+            Assert.That(PickupPatches.IsQuestItem(note), Is.True);
+        }
+
+        [Test]
+        public void OtherItemsAreNoQuestItems()
+        {
+            Assert.That(PickupPatches.IsQuestItem(Item("wood")), Is.False);
+        }
     }
 }

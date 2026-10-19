@@ -47,7 +47,15 @@ language list.
 
 Check it works: the main menu shows "Global Storage v1.0.4 / status: on" in the
 top right corner. Player.log in %USERPROFILE%\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper 2
-should contain "[GK2GlobalStorage] Global Storage 1.0.4 (game folder) loaded (10/10 patches)".
+should contain "[GK2GlobalStorage] Global Storage 1.0.4 (game folder) loaded (14/14 patches)".
+
+An option greyed out and shown OFF in the settings, with the note "Failed to load
+on this game version", could not be loaded on your game version (for example
+another store's or an older build, or game files changed by another mod). The rest
+of the mod works; the main menu then says "on, N patches unloaded".
+Player.log has a line "[GK2GlobalStorage] Not loaded: ..." with the reason: please
+include it when you report this. If nothing of the mod can run on your game version,
+the main menu says "off, failed to load" and the game runs as without the mod.
 
 SETTINGS
 --------

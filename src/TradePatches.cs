@@ -39,7 +39,7 @@ namespace GK2GlobalStorage
         private static MethodInfo priceInPlayerInventory;
         private static MethodInfo playerItemsAvailable;
 
-        public static int Apply(Harmony harmony)
+        public static bool Apply(Harmony harmony)
         {
             Type t = typeof(Trading);
             sellField = AccessTools.Field(t, "sellInventory");
@@ -55,13 +55,13 @@ namespace GK2GlobalStorage
                 || priceInPlayerInventory == null || playerItemsAvailable == null || fill == null || reset == null || accept == null)
             {
                 Debug.LogWarning("[GK2GlobalStorage] Trading patch: Trading members not found (game update?)");
-                return 0;
+                return false;
             }
             harmony.Patch(fill, postfix: new HarmonyMethod(typeof(TradePatches), nameof(FillPostfix)));
             harmony.Patch(tryMoveItem, prefix: new HarmonyMethod(typeof(TradePatches), nameof(MovePrefix)));
             harmony.Patch(reset, prefix: new HarmonyMethod(typeof(TradePatches), nameof(ResetPrefix)));
             harmony.Patch(accept, postfix: new HarmonyMethod(typeof(TradePatches), nameof(AcceptPostfix)));
-            return 1;
+            return true;
         }
 
         private static void FillPostfix(Trading __instance, UIVendorWindowData vendorWindowData)

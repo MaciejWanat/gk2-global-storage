@@ -41,6 +41,22 @@ which hands it the Harmony already loaded.
 | `ChestInteractionHandler.Interact` + `MultiInventory(WorldZoneData, WgoData, bool)` ctor (option `ChestWindows`, off by default) | opening a chest also lists other areas' chests, view only like the game shows the area's chests |
 | `LanguageModLoader.AppendLanguages` | hides the loader pack |
 
+### Other game builds
+
+The patches come in 14 hooks (`src/Hooks.cs`, e.g. trading and the vendor item order are two), each going in as a
+whole or not at all under its own Harmony owner id (`gk2globalstorage.<hook>`). The mod is built against one game
+build, and the runtime looks up the game members a method names only when it compiles it, on its first call. On
+another build (another store's version, an older one, or an `Assembly-CSharp.dll` replaced by a mod) a missing member
+makes the whole patch method fail before its own try/catch, every time the patched game method runs: that is how
+picking up items broke for some Nexus players. So before a hook goes in, `src/Guard.cs` compiles its patch methods
+and every method of the mod they reach (calls, lambdas, iterators, static constructors); about 160 methods in under
+20 ms at startup, most of which the game would compile on first use anyway. A hook that fails this check, whose game
+method is missing, or that Harmony refuses halfway is taken out again and logged as `Not loaded: <option>. <reason>`.
+Its options are greyed out and shown OFF in the settings window, pointing to Player.log, and the main menu says
+`on, N patches unloaded`. When no hook a player would notice goes in, the mod is off (`off, failed to load`).
+Player.log also gets the game version and the Assembly-CSharp module id, which tell two builds apart (the id is also
+in Mono stack traces: `(at <module id>:0)`).
+
 Global chests = every container with `OpenInMultiInventory` in every `WorldZoneData` of every
 `GameSceneData` in the save (the same rule the game uses per zone), plus the factory's belt chests
 (`conveyorType` Chest, ChestOut or Pallet): Garden Storage and Alcohol Storage have
@@ -111,8 +127,10 @@ dotnet test tests\GK2GlobalStorage.Tests
 installed game's DLLs: some game types have default interface methods, which .NET Framework cannot load. They
 cover the config file, the chest pool, the patched game methods (building lists, workbenches, zombie and automatic
 crafters, factory workstations, chest windows), quest redirection, picker order, zombie deliveries, factory input
-chest refills and slot item choice, and the areas whose chests take pickups, and they apply the mod's real Harmony
-patches, so a game update that removes or renames a patched method fails a test.
+chest refills and slot item choice, the areas whose chests take pickups, the startup compile check (code that cannot
+run is found, also through the calls, lambdas and iterators of a hook; a hook failing halfway is taken out again) and
+what an unloaded hook does to the settings window and the main menu. They apply the mod's real Harmony patches, so a
+game update that removes or renames a patched method fails a test.
 `tests\GK2GlobalStorage.Tests\FakeGame.cs` builds a loaded save without the engine (how and why is described there).
 
 Harmony 2.4.2 (MIT) comes from NuGet.

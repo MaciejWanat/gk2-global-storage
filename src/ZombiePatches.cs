@@ -23,7 +23,7 @@ namespace GK2GlobalStorage
         // Zone + item that could not be topped up recently; carriers ask again every frame.
         private static readonly Dictionary<string, int> notAvailable = new Dictionary<string, int>();
 
-        public static int Apply(Harmony harmony)
+        public static bool Apply(Harmony harmony)
         {
             MethodInfo pickUp = AccessTools.Method(typeof(ZombieWgoData), "CaretakerTryMoveToNearestInventoryWithRequiredItemCountToPickUp");
             MethodInfo canTake = AccessTools.Method(typeof(WorldZoneData), nameof(WorldZoneData.CanDeliveryOrderBeTakenOnExecution));
@@ -33,11 +33,11 @@ namespace GK2GlobalStorage
             if (pickUp == null || canTake == null || executingOrder == null || currentTarget == null || moveToTarget == null)
             {
                 Debug.LogWarning("[GK2GlobalStorage] Zombie carrier patch: game methods not found (game update?)");
-                return 0;
+                return false;
             }
             harmony.Patch(canTake, postfix: new HarmonyMethod(typeof(ZombiePatches), nameof(CanTakePostfix)));
             harmony.Patch(pickUp, prefix: new HarmonyMethod(typeof(ZombiePatches), nameof(NearestPrefix)));
-            return 1;
+            return true;
         }
 
         private static bool Accepts(WgoData chest, ItemDef def)

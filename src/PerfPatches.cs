@@ -40,6 +40,12 @@ namespace GK2GlobalStorage
                 return true;
             }
             installed = true;
+            string cannotRun = Guard.Check(typeof(PerfPatches));
+            if (cannotRun != null)
+            {
+                Debug.LogWarning("[GK2GlobalStorage][Perf] Timing patches cannot run on this game version: " + cannotRun);
+                return false;
+            }
             Harmony harmony = new Harmony(Patches.HarmonyId + ".perf");
             HarmonyMethod prefix = new HarmonyMethod(typeof(PerfPatches), nameof(Prefix)) { priority = Priority.First };
             HarmonyMethod postfix = new HarmonyMethod(typeof(PerfPatches), nameof(Postfix)) { priority = Priority.Last };

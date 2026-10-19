@@ -209,7 +209,7 @@ namespace GK2GlobalStorage.Tests
         {
             MethodInfo mode = AccessTools.DeclaredMethod(window, "SetChestItemSettingMode", new[] { typeof(bool), typeof(ConveyorChestSlotData) });
 
-            Assert.That(Harmony.GetPatchInfo(mode)?.Prefixes.Select(p => p.owner), Does.Contain(Patches.HarmonyId));
+            Assert.That(Harmony.GetPatchInfo(mode)?.Prefixes.Select(p => p.owner), Does.Contain(Hooks.HarmonyId(Hook.FactorySlotPicker)));
         }
 
         // The window the game opens for a Conveyor Chest, with only its data (no engine objects).

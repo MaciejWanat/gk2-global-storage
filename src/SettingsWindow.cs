@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using LazyBearTechnology;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,7 +22,16 @@ namespace GK2GlobalStorage
             // A row under another option than those (indented by level): editable while that option and the mod are on.
             public Func<bool> under;
             public bool dev;
+            // Hooks the option needs (any left out: greyed out, OFF), and those without which only a part of it is
+            // lost (still editable, the hint says so). See Hooks.
+            public Hook[] needs;
+            public Hook[] partly;
         }
+
+        private const string FailedHint = "Failed to load on this game version. Reason: Player.log (search for GK2GlobalStorage)";
+        private const string PartlyHint = "Partly failed to load on this game version. Reason: Player.log (search for GK2GlobalStorage)";
+
+        private static string logPath;
 
         // Rows marked dev only show when DeveloperMode = true is set by hand in the config file.
         private static Row[] Rows
@@ -45,33 +55,33 @@ namespace GK2GlobalStorage
             new Row { name = "Global storage", hint = "Turns the whole mod on or off",
                 get = () => Config.Enabled, set = v => { Perf.Flush("switched Global storage " + (v ? "ON" : "OFF")); Config.Enabled = v; } },
             new Row { name = "Building, alchemy, garden...", hint = "Building, alchemy, garden beds and prayers use items from all your chests", level = 1,
-                get = () => Config.Building, set = v => Config.Building = v },
+                get = () => Config.Building, set = v => Config.Building = v, needs = new[] { Hook.Building } },
             new Row { name = "Workbenches", hint = "Workbenches you use yourself take materials from all your chests", level = 1,
-                get = () => Config.Workbenches, set = v => Config.Workbenches = v },
+                get = () => Config.Workbenches, set = v => Config.Workbenches = v, needs = new[] { Hook.Workbenches }, partly = new[] { Hook.CraftFinishCheck } },
             new Row { name = "Quests and dialogs", hint = "Items a quest or dialog asks for can come from any chest", level = 1,
-                get = () => Config.Quests, set = v => Config.Quests = v },
+                get = () => Config.Quests, set = v => Config.Quests = v, needs = new[] { Hook.Quests } },
             new Row { name = "Zombie workers", hint = "Carriers fetch from the nearest chest; what the area lacks comes from other areas", level = 1,
-                get = () => Config.ZombieWorkers, set = v => Config.ZombieWorkers = v },
+                get = () => Config.ZombieWorkers, set = v => Config.ZombieWorkers = v, needs = new[] { Hook.ZombieWorkers } },
             new Row { name = "Automatic crafters", hint = "Crafters with no worker also take from all your chests; can empty them unnoticed", level = 1,
-                get = () => Config.AutoCrafters, set = v => Config.AutoCrafters = v },
+                get = () => Config.AutoCrafters, set = v => Config.AutoCrafters = v, needs = new[] { Hook.Workbenches } },
             new Row { name = "Factory input chests", hint = "Any item from Global Storage on a belt: click a chest output, scroll down, pick it", level = 1,
-                get = () => Config.Factory, set = v => Config.Factory = v },
+                get = () => Config.Factory, set = v => Config.Factory = v, needs = new[] { Hook.Factory }, partly = new[] { Hook.FactorySlotPicker } },
             new Row { name = "Fuel containers", hint = "Fuel slots of furnaces and similar objects count as chests", level = 1,
                 get = () => Config.FuelContainers, set = v => { Config.FuelContainers = v; GlobalStorage.Invalidate(); } },
             new Row { name = "Pickups go to nearest chest", hint = "Items you pick up go to the nearest chest with room in this area, otherwise to your bag", level = 1,
-                get = () => Config.PickupsToChest, set = v => Config.PickupsToChest = v },
+                get = () => Config.PickupsToChest, set = v => Config.PickupsToChest = v, needs = new[] { Hook.Pickups } },
             new Row { name = "Also in the factory", hint = "Off: in the factory pickups go to your bag, so belt chests stay clean", level = 2, under = () => Config.PickupsToChest,
-                get = () => Config.PickupsInFactory, set = v => Config.PickupsInFactory = v },
+                get = () => Config.PickupsInFactory, set = v => Config.PickupsInFactory = v, needs = new[] { Hook.Pickups } },
             new Row { name = "Show items from other chests", hint = "Chests from other areas appear below your inventory", level = 1,
                 get = () => Config.ShowOtherChests, set = v => Config.ShowOtherChests = v },
             new Row { name = "Vendor windows", hint = "Sell straight from your chests; what the vendor buys comes first", level = 2,
-                get = () => Config.Trading, set = v => Config.Trading = v },
+                get = () => Config.Trading, set = v => Config.Trading = v, needs = new[] { Hook.Trading }, partly = new[] { Hook.VendorOrder } },
             new Row { name = "Item pickers", hint = "Choosing seeds, organs, grave decorations and similar", level = 2,
-                get = () => Config.Pickers, set = v => Config.Pickers = v },
+                get = () => Config.Pickers, set = v => Config.Pickers = v, needs = new[] { Hook.Pickers } },
             new Row { name = "Usable items only", hint = "Pickers hide items they cannot use and chests without such items", level = 3,
-                get = () => Config.PickersOnlyUsable, set = v => Config.PickersOnlyUsable = v },
+                get = () => Config.PickersOnlyUsable, set = v => Config.PickersOnlyUsable = v, needs = new[] { Hook.Pickers }, partly = new[] { Hook.PickerCells } },
             new Row { name = "Chest windows", hint = "Opening any chest; other chests are view only there. Slightly affects performance.", level = 2,
-                get = () => Config.ChestWindows, set = v => Config.ChestWindows = v },
+                get = () => Config.ChestWindows, set = v => Config.ChestWindows = v, needs = new[] { Hook.ChestWindows } },
             new Row { name = "Performance report", hint = "Developer: every 30 s writes timings to GK2GlobalStorage-perf.txt", dev = true,
                 get = () => Config.PerfReport, set = v => { Config.PerfReport = v; Perf.SetActive(v); } },
         };
@@ -150,8 +160,39 @@ namespace GK2GlobalStorage
             }
         }
 
+        // When nothing of the mod could be loaded (Hooks.ModOff) every row, the main switch too, is unavailable.
+        private static Availability StateOf(Row r)
+        {
+            return Hooks.Of(r.needs, r.partly);
+        }
+
+        // For the tests: the state of the row with this name, and every hook some row depends on.
+        internal static Availability StateOf(string rowName)
+        {
+            return StateOf(Array.Find(AllRows, r => r.name == rowName));
+        }
+
+        internal static IEnumerable<Hook> RowHooks()
+        {
+            foreach (Row r in AllRows)
+            {
+                foreach (Hook hook in r.needs ?? new Hook[0])
+                {
+                    yield return hook;
+                }
+                foreach (Hook hook in r.partly ?? new Hook[0])
+                {
+                    yield return hook;
+                }
+            }
+        }
+
         private static bool IsEditable(Row r)
         {
+            if (StateOf(r) == Availability.Unavailable)
+            {
+                return false;
+            }
             if (r.under != null)
             {
                 return Config.Enabled && r.under();
@@ -268,6 +309,7 @@ namespace GK2GlobalStorage
             {
                 Row r = Rows[i];
                 bool value = r.get();
+                Availability state = StateOf(r);
                 GUI.enabled = IsEditable(r);
                 GUILayout.BeginHorizontal(i == selected ? rowSelected : row);
                 if (r.level > 0)
@@ -276,10 +318,12 @@ namespace GK2GlobalStorage
                 }
                 GUILayout.BeginVertical();
                 GUILayout.Label(r.name, label);
-                GUILayout.Label(r.hint, hint);
+                GUILayout.Label(state == Availability.Unavailable ? FailedHint : state == Availability.Partly ? PartlyHint : r.hint, hint);
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
-                if (GUILayout.Button(value ? "ON" : "OFF", value ? on : off, GUILayout.Width(90f), GUILayout.Height(34f)))
+                // An option that cannot work shows OFF, whatever the config file says.
+                bool shownOn = value && state != Availability.Unavailable;
+                if (GUILayout.Button(shownOn ? "ON" : "OFF", shownOn ? on : off, GUILayout.Width(90f), GUILayout.Height(34f)))
                 {
                     selected = i;
                     Toggle(r);
@@ -313,6 +357,10 @@ namespace GK2GlobalStorage
             GUILayout.EndScrollView();
             GUILayout.Space(8f);
             GUILayout.Label("File: " + Config.FilePath, hint);
+            if (Hooks.ModOff || Hooks.UnloadedCount > 0)
+            {
+                GUILayout.Label("Log: " + LogPath(), hint);
+            }
             GUILayout.Space(6f);
             GUILayout.BeginHorizontal();
             GUILayout.Label("Keyboard: Shift+F2, arrows, Enter, Esc\nGamepad / Steam Deck: L3+R3, D-pad, A toggle, B close", hint);
@@ -322,6 +370,26 @@ namespace GK2GlobalStorage
                 SetOpen(false);
             }
             GUILayout.EndHorizontal();
+        }
+
+        // Player.log, where the reasons for options that failed to load are.
+        private static string LogPath()
+        {
+            if (logPath == null)
+            {
+                try
+                {
+                    logPath = Application.consoleLogPath;
+                }
+                catch (Exception)
+                {
+                }
+                if (string.IsNullOrEmpty(logPath))
+                {
+                    logPath = System.IO.Path.Combine(Application.persistentDataPath, "Player.log");
+                }
+            }
+            return logPath;
         }
 
         private void EnsureStyles()

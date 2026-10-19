@@ -12,15 +12,15 @@ namespace GK2GlobalStorage.Tests
     public sealed class GamePatchTests
     {
         [Test]
-        public void EveryCountedPatchIsApplied()
+        public void EveryHookIsApplied()
         {
             Assert.That(FakeGame.PatchesApplied, Is.EqualTo(Plugin.PatchCount), string.Join("\n", FakeGame.PatchLog));
+            Assert.That(Hooks.Unloaded.Select(h => Hooks.Name(h) + ": " + Hooks.Failure(h)), Is.Empty);
         }
 
         [Test]
         public void NoPatchReportsAMissingTargetOrAFailure()
         {
-            // Includes the chest window and craft finish patches, which are not part of the count.
             Assert.That(FakeGame.PatchLog.Where(line => line.StartsWith("Warning") || line.StartsWith("Error") || line.StartsWith("Exception")), Is.Empty);
         }
 
@@ -37,7 +37,7 @@ namespace GK2GlobalStorage.Tests
         public void EveryQuestTargetTypeHasARedirectedMethod()
         {
             string[] patchedTypes = Harmony.GetAllPatchedMethods()
-                .Where(m => Harmony.GetPatchInfo(m)?.Transpilers.Any(p => p.owner == Patches.HarmonyId) == true)
+                .Where(m => Harmony.GetPatchInfo(m)?.Transpilers.Any(p => p.owner == Hooks.HarmonyId(Hook.Quests)) == true)
                 .Select(m => OuterType(m.DeclaringType).FullName)
                 .Distinct()
                 .ToArray();

@@ -15,17 +15,32 @@ namespace GK2GlobalStorage
     {
         private static FieldInfo dropCollectedEvent;
 
-        public static int Apply(Harmony harmony)
+        // ItemDef.isQuestItem, read by reflection: some game builds players run do not have it, and naming it in code
+        // made the whole prefix fail there, so nothing could be picked up (see Guard).
+        private static FieldInfo questItemField;
+
+        public static bool Apply(Harmony harmony)
         {
             MethodInfo collect = AccessTools.Method(typeof(PlayerData), nameof(PlayerData.CollectDrop));
             dropCollectedEvent = AccessTools.Field(typeof(PlayerData), "OnDropCollected");
+            questItemField = AccessTools.Field(typeof(ItemDef), "isQuestItem");
             if (collect == null)
             {
                 Debug.LogWarning("[GK2GlobalStorage] Pickup patch: PlayerData.CollectDrop not found (game update?)");
-                return 0;
+                return false;
+            }
+            if (questItemField == null || questItemField.FieldType != typeof(bool))
+            {
+                questItemField = null;
+                Debug.Log("[GK2GlobalStorage] Pickup patch: this game version has no ItemDef.isQuestItem; quest items are treated like other items");
             }
             harmony.Patch(collect, prefix: new HarmonyMethod(typeof(PickupPatches), nameof(CollectPrefix)));
-            return 1;
+            return true;
+        }
+
+        internal static bool IsQuestItem(ItemDef definition)
+        {
+            return questItemField != null && definition != null && (bool)questItemField.GetValue(definition);
         }
 
         // Returns false (skip the game's method) only when the whole drop went into chests.
@@ -43,7 +58,7 @@ namespace GK2GlobalStorage
                     return true;
                 }
                 // Quest items, and items pinned to the quick bar (it uses them from the bag), always go to the bag.
-                if (drop.Item?.Definition == null || drop.Item.Definition.isQuestItem || IsPinned(__instance, drop.Item))
+                if (drop.Item?.Definition == null || IsQuestItem(drop.Item.Definition) || IsPinned(__instance, drop.Item))
                 {
                     return true;
                 }

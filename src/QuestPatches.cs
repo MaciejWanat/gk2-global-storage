@@ -27,9 +27,9 @@ namespace GK2GlobalStorage
 
         private static Dictionary<MethodInfo, MethodInfo> map;
 
-        public static int Apply(Harmony harmony, out int methods)
+        public static bool Apply(Harmony harmony)
         {
-            methods = 0;
+            int methods = 0;
             map = new Dictionary<MethodInfo, MethodInfo>
             {
                 [AccessTools.Method(typeof(Item), nameof(Item.HasItemQuantityInInventory), new[] { typeof(string), typeof(int) })]
@@ -42,7 +42,7 @@ namespace GK2GlobalStorage
             if (map.Keys.Any(k => k == null) || map.Values.Any(v => v == null))
             {
                 Debug.LogWarning("[GK2GlobalStorage] Quest patch: inventory methods not found (game update?)");
-                return 0;
+                return false;
             }
             HashSet<int> tokens = new HashSet<int>(map.Keys.Select(k => k.MetadataToken));
             Module module = typeof(Item).Module;
@@ -74,7 +74,8 @@ namespace GK2GlobalStorage
                     }
                 }
             }
-            return types == TargetTypes.Length && methods > 0 ? 1 : 0;
+            Debug.Log("[GK2GlobalStorage] Quest patch: " + methods + " method(s) redirected");
+            return types == TargetTypes.Length && methods > 0;
         }
 
         private static IEnumerable<MethodBase> MethodsOf(Type type)

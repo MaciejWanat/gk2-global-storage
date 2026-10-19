@@ -78,30 +78,37 @@ namespace GK2GlobalStorage
 
         private string Text()
         {
-            string status;
-            if (Plugin.Patched < 0)
-            {
-                status = Accent("off, failed to load (see Player.log)", "#E6503F");
-            }
-            else if (!Config.Enabled)
-            {
-                status = Accent("off (Shift+F2)", "#F2BF33");
-            }
-            else if (Plugin.Patched < Plugin.PatchCount)
-            {
-                status = Accent("partly on (" + Plugin.Patched + "/" + Plugin.PatchCount + ")", "#F2BF33");
-            }
-            else
-            {
-                status = Accent("on");
-            }
+            string status = Status(Plugin.Patched, Config.Enabled, Hooks.UnloadedCount, out string color);
             if (source == null)
             {
                 source = Plugin.InstallSource;
             }
             return Accent("Global Storage") + " v" + Plugin.Version
-                + "\nstatus: " + status
+                + "\nstatus: " + Accent(status, color)
                 + "\ninstalled: " + Accent(source);
+        }
+
+        // The status line and its color (null: the menu's accent). patched < 0: nothing of the mod could be loaded;
+        // unloaded: hooks left out (see Hooks), the settings window says which options they take away.
+        internal static string Status(int patched, bool enabled, int unloaded, out string color)
+        {
+            if (patched < 0)
+            {
+                color = "#E6503F";
+                return "off, failed to load (see Player.log)";
+            }
+            if (!enabled)
+            {
+                color = "#F2BF33";
+                return "off (Shift+F2)";
+            }
+            if (unloaded > 0)
+            {
+                color = "#F2BF33";
+                return "on, " + unloaded + (unloaded == 1 ? " patch" : " patches") + " unloaded (Shift+F2)";
+            }
+            color = null;
+            return "on";
         }
 
         private string Accent(string value, string color = null)

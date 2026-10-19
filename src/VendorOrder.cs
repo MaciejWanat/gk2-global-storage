@@ -21,7 +21,7 @@ namespace GK2GlobalStorage
         private static FieldInfo windowData;
         private static FieldInfo playerSide;
 
-        // True when patched (not counted: trading works without it).
+        // True when patched (a hook of its own: trading works without it).
         public static bool Apply(Harmony harmony)
         {
             windowData = AccessTools.Field(typeof(LazyWidget<UIVendorWindowData>), "data");
