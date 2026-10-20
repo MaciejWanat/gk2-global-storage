@@ -124,7 +124,7 @@ Permissions: open source (link GitHub); Harmony MIT license included.
 
 ## Before every release
 
-- [ ] Player.log shows `(14/14 patches)`, `Quest patch: N method(s) redirected`, no `Not loaded:` line, and the main menu says `status: on`
+- [ ] Player.log shows `(15/15 patches)`, `Quest patch: N method(s) redirected`, no `Not loaded:` line, and the main menu says `status: on`
 - [ ] Settings window opens with Shift+F2 and with L3+R3 on a gamepad; A toggles, B closes
 - [ ] Craft in zone X with items only in a chest in zone Y → chest Y loses them
 - [ ] Quest turn-in and vendor sale from chests work; cancelled vendor deal returns items to the chest

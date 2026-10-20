@@ -60,6 +60,8 @@ namespace GK2GlobalStorage
                 get = () => Config.Workbenches, set = v => Config.Workbenches = v, needs = new[] { Hook.Workbenches }, partly = new[] { Hook.CraftFinishCheck } },
             new Row { name = "Quests and dialogs", hint = "Items a quest or dialog asks for can come from any chest", level = 1,
                 get = () => Config.Quests, set = v => Config.Quests = v, needs = new[] { Hook.Quests } },
+            new Row { name = "Fishing bait", hint = "Bait for fishing can come from any chest", level = 1,
+                get = () => Config.Fishing, set = v => Config.Fishing = v, needs = new[] { Hook.Fishing } },
             new Row { name = "Zombie workers", hint = "Carriers fetch from the nearest chest; what the area lacks comes from other areas", level = 1,
                 get = () => Config.ZombieWorkers, set = v => Config.ZombieWorkers = v, needs = new[] { Hook.ZombieWorkers } },
             new Row { name = "Automatic crafters", hint = "Crafters with no worker also take from all your chests; can empty them unnoticed", level = 1,

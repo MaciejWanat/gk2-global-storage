@@ -12,6 +12,7 @@ namespace GK2GlobalStorage
         public static bool Building = true;
         public static bool Workbenches = true;
         public static bool Quests = true;
+        public static bool Fishing = true;
         public static bool ShowOtherChests = true;
         public static bool Trading = true;
         public static bool Pickers = true;
@@ -53,6 +54,9 @@ Workbenches = {B(Workbenches)}
 
 # Quest and dialog requirements are checked against, and taken from, your bag plus every chest.
 Quests = {B(Quests)}
+
+# Fishing bait can come from any chest: the fishing window lists and counts it, casting takes it (bag first).
+Fishing = {B(Fishing)}
 
 # Zombie workbenches: their carriers fetch from the nearest chest of the area, and what the area lacks is
 # brought over from chests in other areas. Fuel for zombie workbenches comes from every zone.
@@ -179,6 +183,7 @@ PerfReport = {B(PerfReport)}
                 case "building": Building = Bool(value, Building); break;
                 case "workbenches": Workbenches = Bool(value, Workbenches); break;
                 case "quests": Quests = Bool(value, Quests); break;
+                case "fishing": Fishing = Bool(value, Fishing); break;
                 case "showotherchests": ShowOtherChests = Bool(value, ShowOtherChests); break;
                 case "trading": Trading = Bool(value, Trading); break;
                 case "pickers": Pickers = Bool(value, Pickers); break;

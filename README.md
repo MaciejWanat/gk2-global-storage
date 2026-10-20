@@ -32,6 +32,7 @@ which hands it the Harmony already loaded.
 | `CraftElementBase.CanFinishCraft` | while it runs, the pool stays the game's: a zombie's result must fit in its area's chests, the only ones carriers store it in |
 | `UIMultiInventoryWindowData` ctor | item picker windows: other areas' chests appended as their own sections only with `Pickers` on (default); chests holding an item the picker accepts come first (after the bag); with `PickersOnlyUsable` (default) only usable items and the chests holding them are shown (game's "not shown" item condition + empty slots hidden in an `InventoryWidget.Redraw` postfix); otherwise exactly as in the game |
 | Transpiler on quest/dialog classes | bag item has/count/remove calls go through `QuestRedirect` (bag first, then chests) |
+| Transpiler on `ReservoirInteractionHandler.Interact` and `UIFishingWindowData.UpdateAvailableFishingAndBaits` + `UIFishingWindow.OnSubmitPressed` / `Inventory.RemoveItemById` (option `Fishing`) | fishing bait: the water's "no bait" check and the window's bait counts go through `FishingRedirect` (bag + every chest); while the cast button runs, a bag removal that comes up short takes the rest from the chests (`OnSubmitBait` itself calls Unity internals, which .NET 8 cannot patch in the tests) |
 | `Trading` | chests with sellable items listed under the bag; moved items are taken from the chest and return there on cancel |
 | `UIVendorWindow.TryUpdateHappinessStatusIcons` (with `Trading`, i.e. whenever vendor windows show your chests) | on your side, after every redraw, each section's cells are reordered in their grid: items the vendor buys (the section's own greying condition) first, among them those that give gratitude (the game's `Vendor.HasHappinessForItem`, as for the icon; `townVendor` vendors = all but the Bishop and the Woodcarver), then greyed-out items, then empty cells; chests holding a sellable item with gratitude are listed first; inventories are not touched (`src/VendorOrder.cs`) |
 | `WorldZoneData.CanDeliveryOrderBeTakenOnExecution` + `ZombieWgoData.CaretakerTryMoveToNearestInventoryWithRequiredItemCountToPickUp` (option `ZombieWorkers`) | when the area lacks a zombie delivery, the missing amount is moved in from other areas' chests; carriers walk to the nearest chest holding any of the item |
@@ -43,7 +44,7 @@ which hands it the Harmony already loaded.
 
 ### Other game builds
 
-The patches come in 14 hooks (`src/Hooks.cs`, e.g. trading and the vendor item order are two), each going in as a
+The patches come in 15 hooks (`src/Hooks.cs`, e.g. trading and the vendor item order are two), each going in as a
 whole or not at all under its own Harmony owner id (`gk2globalstorage.<hook>`). The mod is built against one game
 build, and the runtime looks up the game members a method names only when it compiles it, on its first call. On
 another build (another store's version, an older one, or an `Assembly-CSharp.dll` replaced by a mod) a missing member
@@ -126,7 +127,7 @@ dotnet test tests\GK2GlobalStorage.Tests
 (with `-p:GameDir=...` as above for another install location). The tests run outside the game, on .NET 8, against the
 installed game's DLLs: some game types have default interface methods, which .NET Framework cannot load. They
 cover the config file, the chest pool, the patched game methods (building lists, workbenches, zombie and automatic
-crafters, factory workstations, chest windows), quest redirection, picker order, zombie deliveries, factory input
+crafters, factory workstations, chest windows), quest redirection, fishing bait, picker order, zombie deliveries, factory input
 chest refills and slot item choice, the areas whose chests take pickups, the startup compile check (code that cannot
 run is found, also through the calls, lambdas and iterators of a hook; a hook failing halfway is taken out again) and
 what an unloaded hook does to the settings window and the main menu. They apply the mod's real Harmony patches, so a

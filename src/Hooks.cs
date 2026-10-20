@@ -16,6 +16,7 @@ namespace GK2GlobalStorage
         ChestWindows,
         LanguageList,
         Quests,
+        Fishing,
         Trading,
         VendorOrder,
         ZombieWorkers,
@@ -91,6 +92,7 @@ namespace GK2GlobalStorage
                 case Hook.ChestWindows: return "Chest windows";
                 case Hook.LanguageList: return "Hiding the loader from the language list";
                 case Hook.Quests: return "Quests and dialogs";
+                case Hook.Fishing: return "Fishing bait";
                 case Hook.Trading: return "Vendor windows";
                 case Hook.VendorOrder: return "Vendor windows: item order";
                 case Hook.ZombieWorkers: return "Zombie workers";
