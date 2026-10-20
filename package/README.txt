@@ -6,6 +6,7 @@ Items in ANY of your storage chests, in ANY zone and on ANY level, can be used f
   - crafting at workbenches you operate yourself
   - alchemy, garden beds, prayers, resurrection, tooltips
   - quest and dialog requirements (checked against, and taken from, bag + chests)
+  - fishing bait
   - trading: chests holding what the vendor buys are listed in the vendor window
     (what the vendor buys comes first, items that give gratitude at the front)
 
@@ -47,7 +48,7 @@ language list.
 
 Check it works: the main menu shows "Global Storage v1.0.5 / status: on" in the
 top right corner. Player.log in %USERPROFILE%\AppData\LocalLow\Lazy Bear Games\Graveyard Keeper 2
-should contain "[GK2GlobalStorage] Global Storage 1.0.5 (game folder) loaded (14/14 patches)".
+should contain "[GK2GlobalStorage] Global Storage 1.0.5 (game folder) loaded (15/15 patches)".
 
 An option greyed out and shown OFF in the settings, with the note "Failed to load
 on this game version", could not be loaded on your game version (for example
@@ -71,6 +72,7 @@ Changes apply immediately and are saved to
                   from all your chests
   Quests          items a quest or dialog asks for can come      (default on)
                   from any chest
+  Fishing         bait for fishing can come from any chest       (default on)
   ZombieWorkers   zombie carriers fetch from the nearest chest;   (default off)
                   what the area lacks is brought over from
                   chests in other areas

@@ -19,6 +19,7 @@ namespace GK2GlobalStorage.Tests
                 Assert.That(Config.Building, Is.True, nameof(Config.Building));
                 Assert.That(Config.Workbenches, Is.True, nameof(Config.Workbenches));
                 Assert.That(Config.Quests, Is.True, nameof(Config.Quests));
+                Assert.That(Config.Fishing, Is.True, nameof(Config.Fishing));
                 Assert.That(Config.ShowOtherChests, Is.True, nameof(Config.ShowOtherChests));
                 Assert.That(Config.Trading, Is.True, nameof(Config.Trading));
                 Assert.That(Config.Pickers, Is.True, nameof(Config.Pickers));
@@ -44,6 +45,7 @@ namespace GK2GlobalStorage.Tests
             Config.Building = false;
             Config.Workbenches = false;
             Config.Quests = false;
+            Config.Fishing = false;
             Config.ShowOtherChests = false;
             Config.Trading = false;
             Config.Pickers = false;
@@ -71,6 +73,7 @@ namespace GK2GlobalStorage.Tests
                 Assert.That(Config.Building, Is.False);
                 Assert.That(Config.Workbenches, Is.False);
                 Assert.That(Config.Quests, Is.False);
+                Assert.That(Config.Fishing, Is.False);
                 Assert.That(Config.ShowOtherChests, Is.False);
                 Assert.That(Config.Trading, Is.False);
                 Assert.That(Config.Pickers, Is.False);

@@ -86,6 +86,7 @@ namespace GK2GlobalStorage
                     postfix: nameof(HideLoaderPack)));
 
             Install(Hook.Quests, () => Guard.Check(typeof(QuestPatches), typeof(QuestRedirect)), QuestPatches.Apply);
+            Install(Hook.Fishing, () => Guard.Check(typeof(FishingPatches), typeof(FishingRedirect)), FishingPatches.Apply);
             Install(Hook.Trading, () => Guard.Check(typeof(TradePatches)), TradePatches.Apply);
             // Vendor windows work without it.
             Install(Hook.VendorOrder, () => Guard.Check(typeof(VendorOrder)), VendorOrder.Apply);
